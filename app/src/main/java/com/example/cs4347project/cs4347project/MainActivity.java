@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 // Some code adapted from http://stackoverflow.com/questions/13679568/using-android-gyroscope-instead-of-accelerometer-i-find-lots-of-bits-and-pieces
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
+    private static final float FLICK_INTERVAL = 180, UPDATE_INTERVAL = 50;
     private SensorManager mSensorManager;
     private Sensor mGyroSensor, mAccelSensor, mMagneticSensor, mGravitySensor;
 
@@ -28,11 +29,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] rotationMatrix2 = new float[9];
     private float[] inclinationMatrix = new float[9];
     private final double EPSILON = 0.000000001;
-    private float timestamp;
+
+    private long mPreviousUpdateTimestamp, mLastFlickTimestamp;
+
     private boolean mHasInitialOrientation, mHasGravity = false, mHasMag = false, mHasAccel = false;
     private float[] mGravity = new float[4];
     private float[] mGeomagnetic = new float[4];
-    private float[] orientation = new float[3];
+    private float[] orientation = new float[3]; // Yaw pitch roll in radians
 
     private MediaPlayer mMediaPlayer = null;
     private SoundPool mSoundPool = null;
@@ -117,6 +120,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mGravity = sensorEvent.values;
             mHasAccel = true;
         }
+        long timestamp = System.currentTimeMillis();
+        long deltaTime = timestamp - mPreviousUpdateTimestamp;
+        if (deltaTime < UPDATE_INTERVAL) {
+            return;
+        }
+        float[] previousOrientation = new float[3];
+        copyFloat(orientation, previousOrientation);
 
         if ((mHasAccel || mHasGravity) && mHasMag) {
             calculateOrientation();
@@ -124,8 +134,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         updateSoundToPlay();
 
+        mPreviousUpdateTimestamp = timestamp;
 //        if (mGravity != null && mGeomagnetic != null && !mHasInitialOrientation) {
 //            calculateOrientation();
+//        }
+//        if (deltaTime > 0) {
+        update(deltaTime, previousOrientation, orientation);
 //        }
     }
 
@@ -176,6 +190,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        mSensorDebugLabel.setText(String.format("%f, %f, %f", orientationValues[0], orientationValues[1], orientationValues[2]));
 //        // rotationCurrent = rotationCurrent * deltaRotationMatrix;
 //    }
+
+    private void update(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
+        Log.d("SP", "Deltatime: "+deltaTimeMillis);
+        checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
+    }
+
+    private void checkFlick(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
+        double deltaRoll = Math.toDegrees(currentOrientation[2]) - Math.toDegrees(previousOrientation[2]);
+        double rollSpeed = deltaRoll / (deltaTimeMillis / 1000.0);
+
+        double shakeIntensity = Math.sqrt(0//Math.pow(currentOrientation[0] - previousOrientation[0], 2.0)
+                + Math.pow(currentOrientation[1] - previousOrientation[1], 2)
+                + Math.pow(currentOrientation[2] - previousOrientation[2], 2)) / deltaTimeMillis * 1000;
+        Log.d("SP", "Shake: "+shakeIntensity);
+
+        long currentTimestamp = System.currentTimeMillis();
+
+        if (rollSpeed!=0) Log.d("SP", "Delta rollspeed: "+rollSpeed);
+        if (shakeIntensity >= 25.2) {
+            if (currentTimestamp - mLastFlickTimestamp <= FLICK_INTERVAL) {
+                Log.d("SP", "Too soon");
+                return;
+            }
+            Log.d("SP", "Delta rollspeed: "+rollSpeed);
+            mLastFlickTimestamp = currentTimestamp;
+            playSoundPress(null);
+        }
+    }
+
+    private void copyFloat(float[] source, float[] dest) {
+        if (source.length != dest.length) {
+            return;
+        }
+        for (int i=0; i<source.length; i++) {
+            dest[i] = source[i];
+        }
+    }
 
     private void calculateOrientation() {
         mHasInitialOrientation = SensorManager.getRotationMatrix(
