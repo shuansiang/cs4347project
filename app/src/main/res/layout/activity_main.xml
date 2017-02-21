@@ -32,6 +32,16 @@
         android:layout_below="@+id/currentSoundLabel"
         android:layout_alignParentStart="true"
         android:layout_marginTop="58dp"
-        android:id="@+id/playSoundButton"
-        android:onClick="playSoundPress"/>
+        android:id="@+id/button"
+        android:onClick="playSoundPress" />
+
+    <Button
+        android:text="Add to buffer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/addToBufferButton"
+        android:layout_alignBaseline="@+id/button"
+        android:layout_alignBottom="@+id/button"
+        android:layout_centerHorizontal="true"
+        />
 </RelativeLayout>
