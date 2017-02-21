@@ -5,7 +5,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.support.v7.app.AppCompatActivity;
@@ -39,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private MediaPlayer mMediaPlayer = null;
     private SoundPool mSoundPool = null;
+    private AudioTrack mStreamingTrack = null;
 
     private int[] pianoSoundIds = {
             R.raw.c_piano,
@@ -73,16 +76,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
             @Override
             public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-                Log.d("SP", "Sound "+sampleId+" loaded");
+                Log.d("SP", "Sound " + sampleId + " loaded");
             }
         });
+        int minBufferSize = AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        mStreamingTrack = new AudioTrack(AudioManager.STREAM_MUSIC, 44100,
+                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
+                minBufferSize, AudioTrack.MODE_STREAM);
+        Log.d("SP", "MIN BUF SIZE: "+minBufferSize);
+        double[] mSound = new double[4410];
+        short[] mBuffer = new short[4410];
+        for (int i = 0; i < mSound.length; i++) {
+            mSound[i] = Math.sin((2.0*Math.PI * 440.0/44100.0*(double)i));
+            mBuffer[i] = (short) (mSound[i]*Short.MAX_VALUE);
+        }
+
+        mStreamingTrack.play();
 
         loadPianoSounds();
     }
 
     protected void loadPianoSounds() {
         loadedPianoIds = new int[pianoSoundIds.length];
-        for (int i=0; i<pianoSoundIds.length; i++) {
+        for (int i = 0; i < pianoSoundIds.length; i++) {
             loadedPianoIds[i] = mSoundPool.load(this, pianoSoundIds[i], 1);
         }
     }
@@ -192,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //    }
 
     private void update(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
-        Log.d("SP", "Deltatime: "+deltaTimeMillis);
+//        Log.d("SP", "Deltatime: " + deltaTimeMillis);
         checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
     }
 
@@ -203,17 +219,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double shakeIntensity = Math.sqrt(0//Math.pow(currentOrientation[0] - previousOrientation[0], 2.0)
                 + Math.pow(currentOrientation[1] - previousOrientation[1], 2)
                 + Math.pow(currentOrientation[2] - previousOrientation[2], 2)) / deltaTimeMillis * 1000;
-        Log.d("SP", "Shake: "+shakeIntensity);
+//        Log.d("SP", "Shake: " + shakeIntensity);
 
         long currentTimestamp = System.currentTimeMillis();
 
-        if (rollSpeed!=0) Log.d("SP", "Delta rollspeed: "+rollSpeed);
+//        if (rollSpeed != 0) Log.d("SP", "Delta rollspeed: " + rollSpeed);
         if (shakeIntensity >= 25.2) {
             if (currentTimestamp - mLastFlickTimestamp <= FLICK_INTERVAL) {
-                Log.d("SP", "Too soon");
+//                Log.d("SP", "Too soon");
                 return;
             }
-            Log.d("SP", "Delta rollspeed: "+rollSpeed);
+//            Log.d("SP", "Delta rollspeed: " + rollSpeed);
             mLastFlickTimestamp = currentTimestamp;
             playSoundPress(null);
         }
@@ -223,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (source.length != dest.length) {
             return;
         }
-        for (int i=0; i<source.length; i++) {
+        for (int i = 0; i < source.length; i++) {
             dest[i] = source[i];
         }
     }
@@ -274,9 +290,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     public void playSoundPress(View v) {
-        Log.d("SP", "Sound pressed");
+//        Log.d("SP", "Sound pressed");
 
-        mSoundPool.play(loadedPianoIds[mCurrentSoundId], 1, 1, 1, 0, mOctaveOffset+1);
+        mSoundPool.play(loadedPianoIds[mCurrentSoundId], 1, 1, 1, 0, mOctaveOffset + 1);
 //
 //        if (mPreviousSoundId != mCurrentSoundId) {
 //            mPreviousSoundId = mCurrentSoundId;
