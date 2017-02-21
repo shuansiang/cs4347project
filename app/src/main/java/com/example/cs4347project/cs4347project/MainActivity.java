@@ -20,6 +20,13 @@ import android.widget.TextView;
 
 // Some code adapted from http://stackoverflow.com/questions/13679568/using-android-gyroscope-instead-of-accelerometer-i-find-lots-of-bits-and-pieces
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
+
+    public enum FadeType {
+        NONE,
+        FADE_IN,
+        FADE_OUT
+    }
+
     private static final float FLICK_INTERVAL = 180, UPDATE_INTERVAL = 50;
     private SensorManager mSensorManager;
     private Sensor mGyroSensor, mAccelSensor, mMagneticSensor, mGravitySensor;
@@ -43,13 +50,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] mGeomagnetic = new float[4];
     private float[] orientation = new float[3]; // Yaw pitch roll in radians
 
-    private MediaPlayer mMediaPlayer = null;
     private SoundPool mSoundPool = null;
     private AudioTrack mStreamingTrack = null;
     private Thread mAudioWriteThread;
     private AudioWriteRunnable mAudioWriteRunnable;
 
-    private boolean mUseAudioTrack = true, mIsPlayingViolin = false;
+    private boolean mUseAudioTrack = true, mIsPlayingViolin = false, mViolinJustStopped = false, mViolinJustStarted = false;
 
     private int[] pianoSoundIds = {
             R.raw.c_piano,
@@ -79,11 +85,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (mIsPlayingViolin) {
                     float period = 1.0f / mFrequency;
                     float duration = (float) (period * Math.ceil(0.05f / period));
-                    short[] buffer = getSoundBuffer(mFrequency, duration);
+                    short[] buffer = getSoundBuffer(mFrequency, duration, FadeType.NONE);
                     Log.d("SP", "Freq: "+mFrequency);
                     mStreamingTrack.write(buffer, 0, buffer.length);
                 } else {
-                    mStreamingTrack.flush();
+                    if (mViolinJustStopped == true) {
+                        float period = 1.0f / mFrequency;
+                        float duration = (float) (period * Math.ceil(0.25f / period));
+                        short[] buffer = getSoundBuffer(mFrequency, duration, FadeType.FADE_OUT);
+                        mStreamingTrack.write(buffer, 0, buffer.length);
+                        mViolinJustStopped = false;
+                    }
                 }
             }
         }
@@ -104,8 +116,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
                         motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
                     mIsPlayingViolin = false;
+                    mViolinJustStopped = true;
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                     mIsPlayingViolin = true;
+                    mViolinJustStarted = true;
                 }
                 return true;
             }
@@ -147,16 +161,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param duration time in seconds
      * @return amplitude buffer
      */
-    protected short[] getSoundBuffer(float frequency, float duration) {
-//        double[] mSound = new double[2*SAMPLE_RATE];
+    protected short[] getSoundBuffer(float frequency, float duration, FadeType fadeType) {
         short[] buffer = new short[(int) (duration*SAMPLE_RATE)];
+        float[] fadeBuffer = new float[(int) (duration*SAMPLE_RATE)];
+        if (fadeType != FadeType.NONE) {
+            for (int i = 0; i < fadeBuffer.length; i++) {
+                float delta = ((float)i)/(fadeBuffer.length-1);
+                fadeBuffer[i] = (fadeType == FadeType.FADE_IN ? delta : 1 - delta);
+            }
+        }
+
         for (int i = 0; i < buffer.length; i++) {
             double amplitude = Math.sin((2.0*Math.PI * frequency/SAMPLE_RATE *(double)i));
             buffer[i] = (short) (amplitude*Short.MAX_VALUE);
+            if (fadeType != FadeType.NONE) {
+                buffer[i] *= fadeBuffer[i];
+            }
         }
         return buffer;
-//        mStreamingTrack.write(mBuffer, 0, mBuffer.length, AudioTrack.WRITE_NON_BLOCKING);
-//        mStreamingTrack.setVolume(1);
+
     }
 
     public void onAddSoundClicked(View v) {
