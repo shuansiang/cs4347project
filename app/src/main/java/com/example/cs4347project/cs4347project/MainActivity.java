@@ -13,7 +13,9 @@ import android.media.SoundPool;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 // Some code adapted from http://stackoverflow.com/questions/13679568/using-android-gyroscope-instead-of-accelerometer-i-find-lots-of-bits-and-pieces
@@ -23,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor mGyroSensor, mAccelSensor, mMagneticSensor, mGravitySensor;
 
     private TextView mSensorDebugLabel, mSoundToPlayLabel;
+    private Button mAddBufferButton;
 
     private static final float NS2S = 1.0f / 1000000000.0f;
     private final float[] deltaRotationVector = new float[4];
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] rotationMatrix2 = new float[9];
     private float[] inclinationMatrix = new float[9];
     private final double EPSILON = 0.000000001;
+    private static final int SAMPLE_RATE = 44100;
 
     private long mPreviousUpdateTimestamp, mLastFlickTimestamp;
 
@@ -42,6 +46,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private MediaPlayer mMediaPlayer = null;
     private SoundPool mSoundPool = null;
     private AudioTrack mStreamingTrack = null;
+    private Thread mAudioWriteThread;
+    private AudioWriteRunnable mAudioWriteRunnable;
+
+    private boolean mUseAudioTrack = true, mIsPlayingViolin = false;
 
     private int[] pianoSoundIds = {
             R.raw.c_piano,
@@ -58,12 +66,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int mCurrentSoundId = 0, mPreviousSoundId = -1;
     private int mOctaveOffset = 0;
 
+
+    class AudioWriteRunnable implements Runnable {
+        public volatile float mFrequency = 440.0f;
+        public AudioWriteRunnable() {
+
+        }
+
+        public void run() {
+            Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+            while(mUseAudioTrack) {
+                if (mIsPlayingViolin) {
+                    float period = 1.0f / mFrequency;
+                    float duration = (float) (period * Math.ceil(0.05f / period));
+                    short[] buffer = getSoundBuffer(mFrequency, duration);
+                    Log.d("SP", "Freq: "+mFrequency);
+                    mStreamingTrack.write(buffer, 0, buffer.length);
+                } else {
+                    mStreamingTrack.flush();
+                }
+            }
+        }
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mSensorDebugLabel = (TextView) findViewById(R.id.sensorLabel);
         mSoundToPlayLabel = (TextView) findViewById(R.id.currentSoundLabel);
+
+        mAddBufferButton = (Button) findViewById(R.id.addToBufferButton);
+        mAddBufferButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
+                        motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+                    mIsPlayingViolin = false;
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    mIsPlayingViolin = true;
+                }
+                return true;
+            }
+        });
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mGyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
@@ -79,21 +125,42 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Log.d("SP", "Sound " + sampleId + " loaded");
             }
         });
-        int minBufferSize = AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        mStreamingTrack = new AudioTrack(AudioManager.STREAM_MUSIC, 44100,
+        int minBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        mStreamingTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE,
                 AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
                 minBufferSize, AudioTrack.MODE_STREAM);
         Log.d("SP", "MIN BUF SIZE: "+minBufferSize);
-        double[] mSound = new double[4410];
-        short[] mBuffer = new short[4410];
-        for (int i = 0; i < mSound.length; i++) {
-            mSound[i] = Math.sin((2.0*Math.PI * 440.0/44100.0*(double)i));
-            mBuffer[i] = (short) (mSound[i]*Short.MAX_VALUE);
-        }
 
+        mAudioWriteRunnable = new AudioWriteRunnable();
+        mAudioWriteThread = new Thread(mAudioWriteRunnable);
+
+//        getSoundBuffer(440);
         mStreamingTrack.play();
+        mAudioWriteThread.start();
 
         loadPianoSounds();
+    }
+
+    /**
+     *
+     * @param frequency frequency in hertz
+     * @param duration time in seconds
+     * @return amplitude buffer
+     */
+    protected short[] getSoundBuffer(float frequency, float duration) {
+//        double[] mSound = new double[2*SAMPLE_RATE];
+        short[] buffer = new short[(int) (duration*SAMPLE_RATE)];
+        for (int i = 0; i < buffer.length; i++) {
+            double amplitude = Math.sin((2.0*Math.PI * frequency/SAMPLE_RATE *(double)i));
+            buffer[i] = (short) (amplitude*Short.MAX_VALUE);
+        }
+        return buffer;
+//        mStreamingTrack.write(mBuffer, 0, mBuffer.length, AudioTrack.WRITE_NON_BLOCKING);
+//        mStreamingTrack.setVolume(1);
+    }
+
+    public void onAddSoundClicked(View v) {
+//        mIsPlayingViolin = true;
     }
 
     protected void loadPianoSounds() {
@@ -263,6 +330,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mCurrentSoundId = (int) Math.floor(yaw / 180.0f * pianoSoundIds.length) % pianoSoundIds.length;
         mOctaveOffset = (int) Math.floor(yaw / 180.0f * pianoSoundIds.length) / pianoSoundIds.length;
         mSoundToPlayLabel.setText(String.format("Sound: %d, Octave offset: %d", mCurrentSoundId, mOctaveOffset));
+        mAudioWriteRunnable.mFrequency = (int) ((yaw / 360.0f) * 200 + 440);
     }
 
     private float[] matrixMultiplication(float[] a, float[] b) {
