@@ -22,7 +22,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private static final float FLICK_INTERVAL = 180, UPDATE_INTERVAL = 50;
     private SensorManager mSensorManager;
-    private Sensor mGyroSensor, mAccelSensor, mMagneticSensor, mGravitySensor;
+    private Sensor mGyroSensor, mAccelSensor, mMagneticSensor, mGravitySensor, mLinearAccelSensor;
 
     private TextView mSensorDebugLabel, mSoundToPlayLabel;
     private Button mAddBufferButton;
@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] mGravity = new float[4];
     private float[] mGeomagnetic = new float[4];
     private float[] orientation = new float[3]; // Yaw pitch roll in radians
+    private float[] mLinearAccel = new float[3]; // X Y Z linear acceleration
+    private float[] linearAccelOffset = new float[3]; // X Y Z offset
 
     private MediaPlayer mMediaPlayer = null;
     private SoundPool mSoundPool = null;
@@ -66,21 +68,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int mCurrentSoundId = 0, mPreviousSoundId = -1;
     private int mOctaveOffset = 0;
 
+    protected final float ALPHA = 0.25f;
+    protected final float LINEAR_ACCEL_THRESHOLD = 0.25f;
 
     class AudioWriteRunnable implements Runnable {
         public volatile float mFrequency = 440.0f;
+
         public AudioWriteRunnable() {
 
         }
 
         public void run() {
             Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-            while(mUseAudioTrack) {
+            while (mUseAudioTrack) {
                 if (mIsPlayingViolin) {
                     float period = 1.0f / mFrequency;
                     float duration = (float) (period * Math.ceil(0.05f / period));
                     short[] buffer = getSoundBuffer(mFrequency, duration);
-                    Log.d("SP", "Freq: "+mFrequency);
+                    Log.d("SP", "Freq: " + mFrequency);
                     mStreamingTrack.write(buffer, 0, buffer.length);
                 } else {
                     mStreamingTrack.flush();
@@ -116,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagneticSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mGravitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        mLinearAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
 //        mMediaPlayer = MediaPlayer.create(this, pianoSoundIds[mCurrentSoundId]);
         mSoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
@@ -129,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mStreamingTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE,
                 AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
                 minBufferSize, AudioTrack.MODE_STREAM);
-        Log.d("SP", "MIN BUF SIZE: "+minBufferSize);
+        Log.d("SP", "MIN BUF SIZE: " + minBufferSize);
 
         mAudioWriteRunnable = new AudioWriteRunnable();
         mAudioWriteThread = new Thread(mAudioWriteRunnable);
@@ -142,17 +148,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     *
      * @param frequency frequency in hertz
-     * @param duration time in seconds
+     * @param duration  time in seconds
      * @return amplitude buffer
      */
     protected short[] getSoundBuffer(float frequency, float duration) {
 //        double[] mSound = new double[2*SAMPLE_RATE];
-        short[] buffer = new short[(int) (duration*SAMPLE_RATE)];
+        short[] buffer = new short[(int) (duration * SAMPLE_RATE)];
         for (int i = 0; i < buffer.length; i++) {
-            double amplitude = Math.sin((2.0*Math.PI * frequency/SAMPLE_RATE *(double)i));
-            buffer[i] = (short) (amplitude*Short.MAX_VALUE);
+            double amplitude = Math.sin((2.0 * Math.PI * frequency / SAMPLE_RATE * (double) i));
+            buffer[i] = (short) (amplitude * Short.MAX_VALUE);
         }
         return buffer;
 //        mStreamingTrack.write(mBuffer, 0, mBuffer.length, AudioTrack.WRITE_NON_BLOCKING);
@@ -177,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSensorManager.registerListener(this, mAccelSensor, SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, mMagneticSensor, SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, mGravitySensor, SensorManager.SENSOR_DELAY_GAME);
+        mSensorManager.registerListener(this, mLinearAccelSensor, SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
@@ -203,6 +209,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mGravity = sensorEvent.values;
             mHasAccel = true;
         }
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+            mLinearAccel = lowPass(sensorEvent.values.clone(), mLinearAccel);
+        }
         long timestamp = System.currentTimeMillis();
         long deltaTime = timestamp - mPreviousUpdateTimestamp;
         if (deltaTime < UPDATE_INTERVAL) {
@@ -216,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         updateSoundToPlay();
+
 
         mPreviousUpdateTimestamp = timestamp;
 //        if (mGravity != null && mGeomagnetic != null && !mHasInitialOrientation) {
@@ -277,7 +287,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void update(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
 //        Log.d("SP", "Deltatime: " + deltaTimeMillis);
         checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
+        updateLinearAccelSound(deltaTimeMillis, previousOrientation, currentOrientation);
     }
+
+    private void updateLinearAccelSound(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
+        if (Math.abs(mLinearAccel[1]) >= LINEAR_ACCEL_THRESHOLD) {
+            mIsPlayingViolin = true;
+        } else {
+            mIsPlayingViolin = false;
+        }
+    }
+
 
     private void checkFlick(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
         double deltaRoll = Math.toDegrees(currentOrientation[2]) - Math.toDegrees(previousOrientation[2]);
@@ -311,14 +331,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    protected float[] lowPass(float[] input, float[] output) {
+        if (output == null) return input;
+        for (int i = 0; i < input.length; i++) {
+            output[i] = output[i] + ALPHA * (input[i] - output[i]);
+        }
+        return output;
+    }
+
     private void calculateOrientation() {
         mHasInitialOrientation = SensorManager.getRotationMatrix(
                 initialRotationMatrix, null, mGravity, mGeomagnetic);
         SensorManager.remapCoordinateSystem(initialRotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, rotationMatrix2);
         SensorManager.getOrientation(rotationMatrix2, orientation);
         float incl = SensorManager.getInclination(inclinationMatrix);
-        mSensorDebugLabel.setText(String.format("Mh: %f\nPitch:%f\nRoll:%f\nYaw:%f\nIncl:%f", Math.toDegrees(orientation[0]),
-                Math.toDegrees(orientation[1]), Math.toDegrees(orientation[2]), Math.toDegrees(orientation[0]), Math.toDegrees(incl)));
+//        mSensorDebugLabel.setText(String.format("Mh: %f\nPitch:%f\nRoll:%f\nYaw:%f\nIncl:%f", Math.toDegrees(orientation[0]),
+//                Math.toDegrees(orientation[1]), Math.toDegrees(orientation[2]), Math.toDegrees(orientation[0]), Math.toDegrees(incl)));
+        mSensorDebugLabel.setText(String.format("LA X: %f\nLA Y:%f\nLA Z:%f", mLinearAccel[0],
+                mLinearAccel[1], mLinearAccel[2]));
 
 //        System.arraycopy(initialRotationMatrix, 0, currentRotationMatrix, 0, initialRotationMatrix.length);
     }
