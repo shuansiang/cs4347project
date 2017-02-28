@@ -44,4 +44,13 @@
         android:layout_alignBottom="@+id/button"
         android:layout_centerHorizontal="true"
         />
+
+    <Button
+        android:text="Enable Violin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/enableViolinButton"
+        android:layout_below="@+id/addToBufferButton"
+        android:layout_alignStart="@+id/addToBufferButton"
+        android:layout_marginTop="14dp"/>
 </RelativeLayout>

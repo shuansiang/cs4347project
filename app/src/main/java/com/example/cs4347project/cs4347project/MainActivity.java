@@ -20,6 +20,8 @@ import android.widget.TextView;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 // Some code adapted from http://stackoverflow.com/questions/13679568/using-android-gyroscope-instead-of-accelerometer-i-find-lots-of-bits-and-pieces
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -30,12 +32,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         FADE_OUT
     }
 
+    public enum Axis {
+        X, Y, Z
+    }
+
     private static final float FLICK_INTERVAL = 180, UPDATE_INTERVAL = 50;
     private SensorManager mSensorManager;
     private Sensor mGyroSensor, mAccelSensor, mMagneticSensor, mGravitySensor, mLinearAccelSensor;
 
     private TextView mSensorDebugLabel, mSoundToPlayLabel;
-    private Button mAddBufferButton;
+    private Button mAddBufferButton, mEnableViolinButton;
 
     private static final float NS2S = 1.0f / 1000000000.0f;
     private final float[] deltaRotationVector = new float[4];
@@ -57,10 +63,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private SoundPool mSoundPool = null;
     private AudioTrack mStreamingTrack = null;
-    private Thread mAudioWriteThread;
+    private Thread mAudioWriteThread, mAudioStopThread;
     private AudioWriteRunnable mAudioWriteRunnable;
+    private AudioStopRunnable mAudioStopRunnable;
 
-    private boolean mUseAudioTrack = true, mIsPlayingViolin = false, mViolinJustStopped = false, mViolinJustStarted = false;
+    private boolean mUseAudioTrack = true, mIsPlayingViolin = false, mViolinJustStopped = false,
+            mViolinJustStarted = false, mViolinEnabled = false;
 
     private int[] pianoSoundIds = {
             R.raw.c_piano,
@@ -75,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int[] mLoadedPianoIds;
 
     private byte[] mViolinCBuf;
+    private int mLastViolinBufIndex = 0; // Index of the last
 
     private int mCurrentSoundId = 0, mPreviousSoundId = -1;
     private int mOctaveOffset = 0;
@@ -82,8 +91,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected final float ALPHA = 0.25f;
     protected final float LINEAR_ACCEL_THRESHOLD = 0.25f;
 
+    private ArrayList<Float> mAccelHistory = new ArrayList<>();
+
     class AudioWriteRunnable implements Runnable {
         public volatile float mFrequency = 440.0f;
+
+        private long mLastCallTime = -1;
 
         public AudioWriteRunnable() {
 
@@ -92,18 +105,56 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void run() {
             Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
             while (mUseAudioTrack) {
-                if (mIsPlayingViolin) {
+                long currentTime = System.currentTimeMillis();
+                if (mIsPlayingViolin && mViolinEnabled) {
+                    if (mLastCallTime < 0) {
+                        mLastCallTime = System.currentTimeMillis();
+                    }
+//                    float duration = (currentTime - mLastCallTime) * 0.001f;
                     float period = 1.0f / mFrequency;
                     float duration = (float) (period * Math.ceil(0.05f / period));
-                    byte[] buffer = getSoundBuffer(mFrequency, duration, FadeType.NONE);
-                    Log.d("SP", "Freq: " + mFrequency);
+                    byte[] buffer = getViolinBuffer(261.6f, -1, FadeType.NONE, 0);
+                    Log.d("SP", "D: " + duration + " / MLV: " + mLastViolinBufIndex);
+//                    if (duration * SAMPLE_RATE <= 0) {
+//                        duration = 1.0f / SAMPLE_RATE;
+//                    }
+//                    byte[] buffer = getViolinBuffer(mFrequency, duration, mLastViolinBufIndex, FadeType.NONE);
+//                    Log.d("SP", "Freq: " + mFrequency);
                     mStreamingTrack.write(buffer, 0, buffer.length);
                 } else {
+                    // Stopping is handled in the AudioStopRunnable since write will block this thread
+                }
+                mLastCallTime = currentTime;
+            }
+        }
+    }
+
+    class AudioStopRunnable implements Runnable {
+
+        public AudioStopRunnable() {
+
+        }
+
+        public void run() {
+            Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+            while (mUseAudioTrack) {
+                if (!mIsPlayingViolin) {
                     if (mViolinJustStopped == true) {
-                        float period = 1.0f / mFrequency;
-                        float duration = (float) (period * Math.ceil(0.25f / period));
-                        byte[] buffer = getSoundBuffer(mFrequency, duration, FadeType.FADE_OUT);
-                        mStreamingTrack.write(buffer, 0, buffer.length);
+                        int playPos = mStreamingTrack.getPlaybackHeadPosition();
+                        Log.d("SP", "MVJS: Just stopped " + playPos);
+                        mStreamingTrack.pause();
+                        mStreamingTrack.flush();
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        mStreamingTrack.play();
+//                        float period = 1.0f / mFrequency;
+//                        float duration = (float) (period * Math.ceil(0.25f / period));
+//                        byte[] buffer = getViolinBuffer(0, 0.5f, FadeType.FADE_OUT, playPos);
+//                        byte[] buffer = getSoundBuffer(0, 0.5f, FadeType.FADE_OUT);
+//                        mStreamingTrack.write(buffer, 0, buffer.length);
                         mViolinJustStopped = false;
                     }
                 }
@@ -135,6 +186,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        mEnableViolinButton = (Button) findViewById(R.id.enableViolinButton);
+        mEnableViolinButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP ||
+                        motionEvent.getAction() == MotionEvent.ACTION_CANCEL) {
+                    mViolinEnabled = false;
+                    if (mIsPlayingViolin) {
+                        mViolinJustStopped = true;
+                    }
+                    mIsPlayingViolin = false;
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    mViolinEnabled = true;
+                }
+                return true;
+            }
+        });
+
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mGyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -148,16 +217,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             int fileLength = is.available();
             DataInputStream dis = new DataInputStream(getResources().openRawResource(R.raw.c_violin_ensemble));
             mViolinCBuf = new byte[fileLength];
+            Log.d("SP", "VCB: " + fileLength);
             dis.readFully(mViolinCBuf);
-//            for (int x = 0; x < tmpWavBuffer.length; x++) {
-//                Log.d("SP", ""+tmpWavBuffer[x]);
-//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-
-//        mMediaPlayer = MediaPlayer.create(this, pianoSoundIds[mCurrentSoundId]);
         mSoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
         mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
             @Override
@@ -174,11 +239,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mAudioWriteRunnable = new AudioWriteRunnable();
         mAudioWriteThread = new Thread(mAudioWriteRunnable);
 
+        mAudioStopRunnable = new AudioStopRunnable();
+        mAudioStopThread = new Thread(mAudioStopRunnable);
+
 //        getSoundBuffer(440);
         mStreamingTrack.play();
         mAudioWriteThread.start();
+        mAudioStopThread.start();
 
         loadPianoSounds();
+    }
+
+    private float getAverageLinearY() {
+        float sum = 0;
+        for (int i = 0; i < mAccelHistory.size(); i++) {
+            sum += (Math.max(0.1, (float) i / (mAccelHistory.size() - 1))) * Math.abs(mAccelHistory.get(i));
+        }
+        return sum / mAccelHistory.size();
+    }
+
+    public static Axis getFastestAxis(float[] readings) {
+        float x = Math.abs(readings[0]);
+        float y = Math.abs(readings[1]);
+        float z = Math.abs(readings[2]);
+        if (x > y && x > z) {
+            return Axis.X;
+        } else if (y > x && y > z) {
+            return Axis.Y;
+        } else {
+            return Axis.Z;
+        }
     }
 
     /**
@@ -196,18 +286,45 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-        // Play violin sound
-        buffer = mViolinCBuf;
-
-//        for (int i = 0; i < buffer.length; i++) {
-//            double amplitude = Math.sin((2.0 * Math.PI * frequency / SAMPLE_RATE * (double) i));
-//            buffer[i] = (short) (amplitude * Short.MAX_VALUE);
-//            if (fadeType != FadeType.NONE) {
-//                buffer[i] *= fadeBuffer[i];
-//            }
-//        }
+        for (int i = 0; i < buffer.length; i++) {
+            double amplitude = Math.sin((2.0 * Math.PI * frequency / SAMPLE_RATE * (double) i));
+            buffer[i] = (byte) (amplitude * Short.MAX_VALUE);
+            if (fadeType != FadeType.NONE) {
+                buffer[i] *= fadeBuffer[i];
+            }
+        }
         return buffer;
 
+    }
+
+    protected byte[] getViolinBuffer(float frequency, float duration, FadeType fadeType, int startPos) {
+        if (duration < 0) {
+            return mViolinCBuf;
+        }
+        int endPos = startPos + (int) (duration * SAMPLE_RATE);
+        if (endPos > mViolinCBuf.length) {
+            endPos = mViolinCBuf.length - 1;
+        }
+        if (startPos > endPos) {
+            startPos = 0;
+            endPos = Math.min((int) duration * SAMPLE_RATE, mViolinCBuf.length - 1);
+        }
+        byte[] buffer = new byte[endPos - startPos + 1];
+        float[] fadeBuffer = new float[endPos - startPos + 1];
+        if (fadeType != FadeType.NONE) {
+            for (int i = 0; i < fadeBuffer.length; i++) {
+                float delta = ((float) i) / (fadeBuffer.length - 1);
+                fadeBuffer[i] = (fadeType == FadeType.FADE_IN ? delta : 1 - delta);
+            }
+        }
+        for (int i = 0; i < buffer.length; i++) {
+            int violinPos = startPos + i;
+            buffer[i] = mViolinCBuf[violinPos];
+            if (fadeType != FadeType.NONE) {
+                buffer[i] *= fadeBuffer[i];
+            }
+        }
+        return buffer;
     }
 
     public void onAddSoundClicked(View v) {
@@ -239,10 +356,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-//        if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-//            getGyroscope(sensorEvent);
-//        }
-
         if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
             mGeomagnetic = lowPass(sensorEvent.values.clone(), mGeomagnetic);
             mHasMag = true;
@@ -274,12 +387,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
         mPreviousUpdateTimestamp = timestamp;
-//        if (mGravity != null && mGeomagnetic != null && !mHasInitialOrientation) {
-//            calculateOrientation();
-//        }
-//        if (deltaTime > 0) {
+
         update(deltaTime, previousOrientation, orientation);
-//        }
+
     }
 
 //    private void getGyroscope(SensorEvent event) {
@@ -331,7 +441,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //    }
 
     private void update(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
-//        Log.d("SP", "Deltatime: " + deltaTimeMillis);
         checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
         updateLinearAccelSound(deltaTimeMillis, previousOrientation, currentOrientation);
     }
@@ -339,18 +448,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void updateLinearAccelSound(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
         float pitchR = (float) Math.toDegrees(currentOrientation[1]); // Rotational pitch (not the frequency pitch)
         float gain = 1 - ((pitchR + 50) / 140.0f) * 1;
+        mStreamingTrack.setPlaybackRate((int)(gain * 44100));
         mStreamingTrack.setVolume(gain);
-        mSensorDebugLabel.setText(String.format("PitchR:%f\nGain:%f\nMaxVol:%f", pitchR, gain, mStreamingTrack.getMaxVolume()));
+//        mSensorDebugLabel.setText(String.format("PitchR:%f\nGain:%f\nMaxVol:%f" +
+//                "\nMh: %f\nPitch:%f\nRoll:%f", pitchR, gain, mStreamingTrack.getMaxVolume(),
+//                Math.toDegrees(currentOrientation[0]), Math.toDegrees(currentOrientation[1]),
+//                Math.toDegrees(currentOrientation[2])));
+        if (mViolinEnabled) {
+            mAccelHistory.add(mLinearAccel[1]);
+        } else if (mAccelHistory.size() > 0) {
+            mAccelHistory.clear();
+        }
 
-//        if (Math.abs(mLinearAccel[1]) >= LINEAR_ACCEL_THRESHOLD) {
-//            mIsPlayingViolin = true;
-//            mViolinJustStarted = true;
-//        } else {
-//            if (mIsPlayingViolin) {
-//                mViolinJustStopped = true;
-//            }
-//            mIsPlayingViolin = false;
-//        }
+        if (mAccelHistory.size() < 8) {
+            return;
+        }
+        if (getAverageLinearY() >= LINEAR_ACCEL_THRESHOLD) {
+            mIsPlayingViolin = true;
+            mViolinJustStarted = true;
+        } else {
+            if (mIsPlayingViolin) {
+                mViolinJustStopped = true;
+            }
+            mIsPlayingViolin = false;
+        }
+        mAccelHistory = new ArrayList<Float>(mAccelHistory.subList(mAccelHistory.size() - 3, mAccelHistory.size()));
     }
 
 
@@ -402,10 +524,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float incl = SensorManager.getInclination(inclinationMatrix);
 //        mSensorDebugLabel.setText(String.format("Mh: %f\nPitch:%f\nRoll:%f\nYaw:%f\nIncl:%f", Math.toDegrees(orientation[0]),
 //                Math.toDegrees(orientation[1]), Math.toDegrees(orientation[2]), Math.toDegrees(orientation[0]), Math.toDegrees(incl)));
-//        mSensorDebugLabel.setText(String.format("LA X: %f\nLA Y:%f\nLA Z:%f", mLinearAccel[0],
-//                mLinearAccel[1], mLinearAccel[2]));
+        mSensorDebugLabel.setText(String.format("LA X: %f\nLA Y:%f\nLA Z:%f\nALY: %f", mLinearAccel[0],
+                mLinearAccel[1], mLinearAccel[2], getAverageLinearY()));
 
-//        System.arraycopy(initialRotationMatrix, 0, currentRotationMatrix, 0, initialRotationMatrix.length);
     }
 
     private void updateSoundToPlay() {
@@ -443,23 +564,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     public void playSoundPress(View v) {
-//        Log.d("SP", "Sound pressed");
-
         mSoundPool.play(mLoadedPianoIds[mCurrentSoundId], 1, 1, 1, 0, mOctaveOffset + 1);
-//
-//        if (mPreviousSoundId != mCurrentSoundId) {
-//            mPreviousSoundId = mCurrentSoundId;
-//            mMediaPlayer.release();
-//            mMediaPlayer = null;
-//            mMediaPlayer = MediaPlayer.create(this, mLoadedPianoIds[mCurrentSoundId]);
-//        }
-//        if (mMediaPlayer != null) {
-//            if (mMediaPlayer.isPlaying()) {
-//                mMediaPlayer.pause();
-//            }
-//            mMediaPlayer.seekTo(0);
-//            mMediaPlayer.setLooping(false);
-//            mMediaPlayer.start();
-//        }
     }
 }
