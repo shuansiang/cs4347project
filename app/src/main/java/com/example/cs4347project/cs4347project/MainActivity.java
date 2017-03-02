@@ -113,13 +113,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //                    float duration = (currentTime - mLastCallTime) * 0.001f;
                     float period = 1.0f / mFrequency;
                     float duration = (float) (period * Math.ceil(0.05f / period));
-                    byte[] buffer = getViolinBuffer(261.6f, -1, FadeType.NONE, 0);
+//                    byte[] buffer = getViolinBuffer(261.6f, -1, FadeType.NONE, 0);
                     Log.d("SP", "D: " + duration + " / MLV: " + mLastViolinBufIndex);
 //                    if (duration * SAMPLE_RATE <= 0) {
 //                        duration = 1.0f / SAMPLE_RATE;
 //                    }
+                    byte[] buffer = getSoundBuffer(mFrequency, duration, FadeType.NONE);
 //                    byte[] buffer = getViolinBuffer(mFrequency, duration, mLastViolinBufIndex, FadeType.NONE);
-//                    Log.d("SP", "Freq: " + mFrequency);
+                    Log.d("SP", "Freq: " + mFrequency);
                     mStreamingTrack.write(buffer, 0, buffer.length);
                 } else {
                     // Stopping is handled in the AudioStopRunnable since write will block this thread
@@ -288,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         for (int i = 0; i < buffer.length; i++) {
             double amplitude = Math.sin((2.0 * Math.PI * frequency / SAMPLE_RATE * (double) i));
-            buffer[i] = (byte) (amplitude * Short.MAX_VALUE);
+            buffer[i] = (byte) (amplitude * Byte.MAX_VALUE);
             if (fadeType != FadeType.NONE) {
                 buffer[i] *= fadeBuffer[i];
             }
@@ -448,12 +449,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void updateLinearAccelSound(long deltaTimeMillis, float[] previousOrientation, float[] currentOrientation) {
         float pitchR = (float) Math.toDegrees(currentOrientation[1]); // Rotational pitch (not the frequency pitch)
         float gain = 1 - ((pitchR + 50) / 140.0f) * 1;
-        mStreamingTrack.setPlaybackRate((int)(gain * 44100));
+//        mStreamingTrack.setPlaybackRate((int)(gain * 44100));
         mStreamingTrack.setVolume(gain);
-//        mSensorDebugLabel.setText(String.format("PitchR:%f\nGain:%f\nMaxVol:%f" +
-//                "\nMh: %f\nPitch:%f\nRoll:%f", pitchR, gain, mStreamingTrack.getMaxVolume(),
-//                Math.toDegrees(currentOrientation[0]), Math.toDegrees(currentOrientation[1]),
-//                Math.toDegrees(currentOrientation[2])));
+        mSensorDebugLabel.setText(String.format("PitchR:%f\nGain:%f\nMaxVol:%f" +
+                "\nMh: %f\nPitch:%f\nRoll:%f", pitchR, gain, mStreamingTrack.getMaxVolume(),
+                Math.toDegrees(currentOrientation[0]), Math.toDegrees(currentOrientation[1]),
+                Math.toDegrees(currentOrientation[2])));
         if (mViolinEnabled) {
             mAccelHistory.add(mLinearAccel[1]);
         } else if (mAccelHistory.size() > 0) {
@@ -524,8 +525,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float incl = SensorManager.getInclination(inclinationMatrix);
 //        mSensorDebugLabel.setText(String.format("Mh: %f\nPitch:%f\nRoll:%f\nYaw:%f\nIncl:%f", Math.toDegrees(orientation[0]),
 //                Math.toDegrees(orientation[1]), Math.toDegrees(orientation[2]), Math.toDegrees(orientation[0]), Math.toDegrees(incl)));
-        mSensorDebugLabel.setText(String.format("LA X: %f\nLA Y:%f\nLA Z:%f\nALY: %f", mLinearAccel[0],
-                mLinearAccel[1], mLinearAccel[2], getAverageLinearY()));
+//        mSensorDebugLabel.setText(String.format("LA X: %f\nLA Y:%f\nLA Z:%f\nALY: %f", mLinearAccel[0],
+//                mLinearAccel[1], mLinearAccel[2], getAverageLinearY()));
 
     }
 
