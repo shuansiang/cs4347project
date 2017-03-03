@@ -93,6 +93,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private ArrayList<Float> mAccelHistory = new ArrayList<>();
 
+    private ArrayList<Integer> mLastSoundIds = new ArrayList<>();
+
+    public static int mode(Integer a[]) {
+        int maxValue=0, maxCount=0;
+
+        for (int i = 0; i < a.length; ++i) {
+            int count = 0;
+            for (int j = 0; j < a.length; ++j) {
+                if (a[j] == a[i]) ++count;
+            }
+            if (count > maxCount) {
+                maxCount = count;
+                maxValue = a[i];
+            }
+        }
+
+        return maxValue;
+    }
+
     class AudioWriteRunnable implements Runnable {
         public volatile float mFrequency = 440.0f;
 
@@ -452,7 +471,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        mStreamingTrack.setPlaybackRate((int)(gain * 44100));
         mStreamingTrack.setVolume(gain);
         mSensorDebugLabel.setText(String.format("PitchR:%f\nGain:%f\nMaxVol:%f" +
-                "\nMh: %f\nPitch:%f\nRoll:%f", pitchR, gain, mStreamingTrack.getMaxVolume(),
+                        "\nMh: %f\nPitch:%f\nRoll:%f", pitchR, gain, mStreamingTrack.getMaxVolume(),
                 Math.toDegrees(currentOrientation[0]), Math.toDegrees(currentOrientation[1]),
                 Math.toDegrees(currentOrientation[2])));
         if (mViolinEnabled) {
@@ -522,7 +541,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 initialRotationMatrix, null, mGravity, mGeomagnetic);
         SensorManager.remapCoordinateSystem(initialRotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, rotationMatrix2);
         SensorManager.getOrientation(rotationMatrix2, orientation);
-        float incl = SensorManager.getInclination(inclinationMatrix);
+        orientation = lowPass(orientation.clone(), orientation);
+//        float incl = SensorManager.getInclination(inclinationMatrix);
 //        mSensorDebugLabel.setText(String.format("Mh: %f\nPitch:%f\nRoll:%f\nYaw:%f\nIncl:%f", Math.toDegrees(orientation[0]),
 //                Math.toDegrees(orientation[1]), Math.toDegrees(orientation[2]), Math.toDegrees(orientation[0]), Math.toDegrees(incl)));
 //        mSensorDebugLabel.setText(String.format("LA X: %f\nLA Y:%f\nLA Z:%f\nALY: %f", mLinearAccel[0],
@@ -533,11 +553,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void updateSoundToPlay() {
         int yaw = (int) Math.toDegrees(orientation[0]);
         yaw += 180;
+        mCurrentSoundId = (int) Math.floor(yaw / 720.0f * pianoSoundIds.length) % pianoSoundIds.length;
+        mOctaveOffset = (int) Math.floor(yaw / 720.0f * pianoSoundIds.length) / pianoSoundIds.length;
+        if (mLastSoundIds.size() >= 5) {
+            mLastSoundIds.remove(0);
+        }
+        mLastSoundIds.add(mCurrentSoundId);
+        mCurrentSoundId = mode(mLastSoundIds.toArray(new Integer[mLastSoundIds.size()]));
+        Log.d("SP", "USTP: "+mCurrentSoundId);
+        mSoundToPlayLabel.setText(String.format("Sound: %d, Octave offset: %d, Yaw:%d", mCurrentSoundId, mOctaveOffset, yaw));
 
-        mCurrentSoundId = (int) Math.floor(yaw / 180.0f * pianoSoundIds.length) % pianoSoundIds.length;
-        mOctaveOffset = (int) Math.floor(yaw / 180.0f * pianoSoundIds.length) / pianoSoundIds.length;
-        mSoundToPlayLabel.setText(String.format("Sound: %d, Octave offset: %d", mCurrentSoundId, mOctaveOffset));
-        mAudioWriteRunnable.mFrequency = (int) ((yaw / 360.0f) * 200 + 440);
+//        if (yaw > 180) {
+//            mAudioWriteRunnable.mFrequency = 523.5f;
+//        } else {
+//            mAudioWriteRunnable.mFrequency = 440;
+//        }
+        mAudioWriteRunnable.mFrequency = (int) ((180.0f-Math.abs(yaw-180))/180.0f * 200 + 440);
+
     }
 
     private float[] matrixMultiplication(float[] a, float[] b) {
@@ -565,6 +597,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     public void playSoundPress(View v) {
+        Log.d("SP","PLAYING SOUND: "+mCurrentSoundId);
         mSoundPool.play(mLoadedPianoIds[mCurrentSoundId], 1, 1, 1, 0, mOctaveOffset + 1);
     }
 }
