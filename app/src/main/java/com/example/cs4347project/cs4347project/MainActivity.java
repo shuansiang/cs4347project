@@ -13,9 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.JavaCameraView;
+import org.opencv.core.Mat;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -69,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private boolean mUseAudioTrack = true, mIsPlayingViolin = false, mViolinJustStopped = false,
             mViolinJustStarted = false, mViolinEnabled = false;
+
+    private CameraBridgeViewBase mOpenCvCameraView;
 
     private int[] pianoSoundIds = {
             R.raw.c_piano,
@@ -268,6 +275,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mAudioStopThread.start();
 
         loadPianoSounds();
+
+        // Camera test
+        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
+
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+
+        mOpenCvCameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
+            @Override
+            public void onCameraViewStarted(int width, int height) {
+
+            }
+
+            @Override
+            public void onCameraViewStopped() {
+
+            }
+
+            @Override
+            public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+                return inputFrame.rgba();
+            }
+        });
     }
 
     private float getAverageLinearY() {
