@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 // Some code adapted from http://stackoverflow.com/questions/13679568/using-android-gyroscope-instead-of-accelerometer-i-find-lots-of-bits-and-pieces
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainTestingActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final int CAMERA_REQUEST_CODE = 123;
 
@@ -294,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
 
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.setAlpha(0);
 
         mOpenCvCameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
             @Override
