@@ -46,21 +46,31 @@
         android:layout_centerHorizontal="true"
         />
 
+    <org.opencv.android.JavaCameraView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/cameraView"
+        opencv:show_fps="true"
+        opencv:camera_id="any"
+        android:layout_above="@+id/addToBufferButton"/>
+
     <Button
         android:text="Enable Violin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/enableViolinButton"
-        android:layout_below="@+id/addToBufferButton"
-        android:layout_alignStart="@+id/addToBufferButton"
-        android:layout_marginTop="14dp"/>
-
-    <org.opencv.android.JavaCameraView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/cameraView"
+        android:layout_alignTop="@+id/addToBufferButton"
         android:layout_alignParentEnd="true"
-        opencv:show_fps="true"
-        opencv:camera_id="any"/>
+        android:layout_toEndOf="@+id/addToBufferButton"
+        android:layout_alignBottom="@+id/addToBufferButton"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/button"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/averageColourLayout">
+    </LinearLayout>
 
 </RelativeLayout>

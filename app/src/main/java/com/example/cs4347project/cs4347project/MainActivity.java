@@ -1,6 +1,9 @@
 package com.example.cs4347project.cs4347project;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -9,6 +12,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.SoundPool;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,11 +20,17 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -30,6 +40,8 @@ import java.util.Arrays;
 
 // Some code adapted from http://stackoverflow.com/questions/13679568/using-android-gyroscope-instead-of-accelerometer-i-find-lots-of-bits-and-pieces
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
+
+    private static final int CAMERA_REQUEST_CODE = 123;
 
     public enum FadeType {
         NONE,
@@ -76,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mViolinJustStarted = false, mViolinEnabled = false;
 
     private CameraBridgeViewBase mOpenCvCameraView;
+    private LinearLayout mAverageColourLayout;
 
     private int[] pianoSoundIds = {
             R.raw.c_piano,
@@ -230,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return true;
             }
         });
-
+        mAverageColourLayout = (LinearLayout) findViewById(R.id.averageColourLayout);
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mGyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         mAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -277,6 +290,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         loadPianoSounds();
 
         // Camera test
+
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
 
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
@@ -294,9 +308,78 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             @Override
             public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+                Scalar mean = Core.mean(inputFrame.rgba());
+                Log.d("SP", "Mean: "+mean.val[0]+", "+mean.val[1]+ ", "+mean.val[2]);
+                int averageColor = Color.rgb((int) mean.val[0], (int) mean.val[1], (int) mean.val[2]);
+                runOnUiThread(new UpdateBackground(averageColor));
                 return inputFrame.rgba();
             }
         });
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.CAMERA},
+                CAMERA_REQUEST_CODE);
+
+    }
+
+    private class UpdateBackground implements Runnable {
+
+        private int mColor;
+
+        public UpdateBackground(int color) {
+            mColor = color;
+        }
+
+        @Override
+        public void run() {
+            Log.d("SP", "Color: "+mColor);
+            mAverageColourLayout.setBackgroundColor(mColor);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case CAMERA_REQUEST_CODE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay!.
+                    enableCamera();
+
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
+    }
+
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    Log.i("OpenCV", "OpenCV loaded successfully");
+                    mOpenCvCameraView.enableView();
+                } break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
+
+    private void enableCamera() {
+        if (!OpenCVLoader.initDebug()) {
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_2_0, this, mLoaderCallback);
+        } else {
+            Log.d("OpenCV", "OpenCV library found inside package. Using it!");
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
     }
 
     private float getAverageLinearY() {
@@ -589,7 +672,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         mLastSoundIds.add(mCurrentSoundId);
         mCurrentSoundId = mode(mLastSoundIds.toArray(new Integer[mLastSoundIds.size()]));
-        Log.d("SP", "USTP: "+mCurrentSoundId);
+//        Log.d("SP", "USTP: "+mCurrentSoundId);
         mSoundToPlayLabel.setText(String.format("Sound: %d, Octave offset: %d, Yaw:%d", mCurrentSoundId, mOctaveOffset, yaw));
 
 //        if (yaw > 180) {
