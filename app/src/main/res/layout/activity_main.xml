@@ -12,12 +12,14 @@
     android:background="#545454"
     tools:context="com.tetrastudio.MainActivity">
 
-    <ImageView
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@null"
         app:srcCompat="@drawable/logo"
         android:layout_marginTop="137dp"
-        android:id="@+id/imageView"
+        android:id="@+id/imageButton"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:onClick="testt"/>
 </RelativeLayout>

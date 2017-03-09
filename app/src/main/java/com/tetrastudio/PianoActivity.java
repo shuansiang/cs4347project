@@ -2,7 +2,9 @@ package com.tetrastudio;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 
 import com.example.cs4347project.cs4347project.R;
 
@@ -13,9 +15,15 @@ public class PianoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_piano);
+
+
+
+    }
+    public void test(View v) {
+        Log.d("TSTUDIO","HI");
+
     }
 
-    public void buttonpress(View view) {
-        System.out.print("hello");
-    }
+
+
 }
