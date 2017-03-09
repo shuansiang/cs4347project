@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    android:background="#545454"
+    tools:context="com.tetrastudio.VSDActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="504dp"
+        android:layout_alignParentBottom="true"
+        android:background="#7e7e7e">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:layout_width="350dp"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/shaker"
+                android:id="@+id/shaker"
+                android:adjustViewBounds="true"
+                android:background="#7e7e7e"
+                android:scaleType="fitCenter"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/logo"
+                android:id="@+id/logo"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:layout_width="350dp"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/pianoicon"
+                android:background="#7e7e7e"
+                android:id="@+id/pianoicon"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/pie"
+
+        android:id="@+id/imageView4"
+        android:layout_marginTop="298dp"
+        android:layout_alignParentTop="true" />
+
+</RelativeLayout>
