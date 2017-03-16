@@ -1,69 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                xmlns:opencv="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/activity_main2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:opencv="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main2"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
 
-                android:background="#545454"
-                tools:context="com.tetrastudio.VSDActivity">
+    android:background="#545454"
+    tools:context="com.tetrastudio.VSDActivity">
+
     <org.opencv.android.JavaCameraView
+        android:id="@+id/cameraView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/cameraView"
-        opencv:show_fps="true"
         opencv:camera_id="any"
-        />
+        opencv:show_fps="true" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:orientation="horizontal">
 
                 <ImageButton
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:scaleType="fitCenter"
-                    app:srcCompat="@drawable/shaker"
-                    android:background="#7e7e7e"
-                    android:paddingBottom="8dp"
-                    android:paddingTop="8dp"
-                    android:paddingRight="20dp"
                     android:id="@+id/shakerbutton"
-                    android:layout_weight="1" />
-
-                <ImageButton
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:scaleType="fitCenter"
-                    android:padding="3dp"
-                    app:srcCompat="@drawable/logo"
-                    android:background="#7e7e7e"
                     android:layout_weight="1"
-                    android:id="@+id/logo" />
+                    android:background="#7e7e7e"
+                    android:paddingBottom="8dp"
+                    android:paddingRight="20dp"
+                    android:paddingTop="8dp"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/shaker" />
 
                 <ImageButton
+                    android:id="@+id/logo"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_weight="1"
                     android:background="#7e7e7e"
+                    android:padding="3dp"
                     android:scaleType="fitCenter"
-                    android:paddingBottom="8dp"
-                    android:paddingTop="8dp"
-                    android:paddingLeft="20dp"
-                    app:srcCompat="@drawable/pianoicon"
+                    app:srcCompat="@drawable/logo" />
+
+                <ImageButton
                     android:id="@+id/pianobutton"
-                    android:layout_weight="1" />
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="#7e7e7e"
+                    android:paddingBottom="8dp"
+                    android:paddingLeft="20dp"
+                    android:paddingTop="8dp"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/pianoicon" />
 
 
             </LinearLayout>
@@ -138,121 +139,124 @@
 
                 android:layout_weight="3">
 
-
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:paddingLeft="35dp"
-                    >
-
-                    <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/onepie"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:rotation="-0.1"
-                        android:id="@+id/violin_c"
-                        android:tint="#ffcd73" />
-
-                    <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/onepie"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:rotation="51.4"
-                        android:id="@+id/violin_d"
-                        android:tint="#ffd9a0" />
-                    <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/onepie"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:rotation="102.8"
-                        android:id="@+id/violin_e"
-                        android:tint="#ffe4bf" />
-
-                    <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/onepie"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:rotation="154.2"
-                        android:id="@+id/violin_f"
-                        android:tint="#b68800" />
-
-                    <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/onepie"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:rotation="205.6"
-                        android:id="@+id/violin_g"
-                        android:tint="#d39e00" />
-
-                    <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/onepie"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:rotation="257"
-                        android:id="@+id/violin_a"
-                        android:tint="#eab000" />
-
-                    <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/onepie"
-                        android:background="@null"
-                        android:scaleType="fitCenter"
-                        android:rotation="308.4"
-                        android:id="@+id/violin_b"
-                        android:tint="#ffc000" />
+                    android:orientation="horizontal">
 
 
-                </RelativeLayout>
+                    <ImageView
+                        android:id="@+id/violin"
+                        android:layout_width="130dp"
+                        android:layout_height="match_parent"
+                        android:rotation="-90"
+                        android:scaleType="centerInside"
+                        android:layout_weight="1"
+                        app:srcCompat="@drawable/violin" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="3">
+
+                        <ImageButton
+                            android:id="@+id/violin_c"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:rotation="-0.1"
+                            android:scaleType="fitCenter"
+                            android:tint="#ffcd73"
+                            app:srcCompat="@drawable/onepie" />
+
+                        <ImageButton
+                            android:id="@+id/violin_d"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:rotation="51.4"
+                            android:scaleType="fitCenter"
+                            android:tint="#ffd9a0"
+                            app:srcCompat="@drawable/onepie" />
+
+                        <ImageButton
+                            android:id="@+id/violin_e"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:rotation="102.8"
+                            android:scaleType="fitCenter"
+                            android:tint="#ffe4bf"
+                            app:srcCompat="@drawable/onepie" />
+
+                        <ImageButton
+                            android:id="@+id/violin_f"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:rotation="154.2"
+                            android:scaleType="fitCenter"
+                            android:tint="#b68800"
+                            app:srcCompat="@drawable/onepie" />
+
+                        <ImageButton
+                            android:id="@+id/violin_g"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:rotation="205.6"
+                            android:scaleType="fitCenter"
+                            android:tint="#d39e00"
+                            app:srcCompat="@drawable/onepie" />
+
+                        <ImageButton
+                            android:id="@+id/violin_a"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:rotation="257"
+                            android:scaleType="fitCenter"
+                            android:tint="#eab000"
+                            app:srcCompat="@drawable/onepie" />
+
+                        <ImageButton
+                            android:id="@+id/violin_b"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:rotation="308.4"
+                            android:scaleType="fitCenter"
+                            android:tint="#ffc000"
+                            app:srcCompat="@drawable/onepie" />
 
 
+                    </RelativeLayout>
 
-                <ImageView
-                    android:layout_width="130dp"
-                    android:rotation="45"
-                    android:layout_height="match_parent"
-                    app:srcCompat="@drawable/violinbow"
-                    android:layout_alignParentRight="true"
-                    android:scaleType="centerInside"
-                    android:paddingLeft="65dp"
-                    android:paddingBottom="40dp"
-                    android:id="@+id/violinbow" />
+                    <ImageView
+                        android:id="@+id/violinbow"
+                        android:layout_width="130dp"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentRight="true"
+                        android:rotation="45"
+                        android:scaleType="centerInside"
+                        app:srcCompat="@drawable/violinbow"
+                        android:layout_weight="1"/>
 
-                <ImageView
-                    android:layout_width="130dp"
-                    android:layout_height="match_parent"
-                    android:rotation="-90"
-                    app:srcCompat="@drawable/violin"
-                    android:scaleType="centerInside"
-                    android:paddingBottom="70dp"
-                    android:paddingRight="20dp"
-                    android:id="@+id/violin" />
-
+                </LinearLayout>
 
             </RelativeLayout>
 
 
         </LinearLayout>
     </FrameLayout>
+
     <TextView
-        android:text="TextView"
+        android:id="@+id/debugGrav"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:layout_marginTop="67dp"
-        android:id="@+id/debugGrav"/>
+        android:text="TextView" />
 
 </RelativeLayout>
