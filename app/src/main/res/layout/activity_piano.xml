@@ -27,7 +27,7 @@
                 android:padding="3dp"
                 app:srcCompat="@drawable/logo"
                 android:background="#7e7e7e"
-                android:id="@+id/imageButton6" />
+                android:id="@+id/logo" />
 
             <RelativeLayout
                 android:layout_width="match_parent"

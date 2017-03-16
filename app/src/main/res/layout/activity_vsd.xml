@@ -5,62 +5,183 @@
     android:id="@+id/activity_main2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     android:background="#545454"
     tools:context="com.tetrastudio.VSDActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="504dp"
-        android:layout_alignParentBottom="true"
-        android:background="#7e7e7e">
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ImageButton
-                android:layout_width="350dp"
-                android:layout_height="match_parent"
-                app:srcCompat="@drawable/shaker"
-                android:id="@+id/shaker"
-                android:adjustViewBounds="true"
-                android:background="#7e7e7e"
-                android:scaleType="fitCenter"
-                android:layout_weight="1" />
-
-            <ImageView
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:srcCompat="@drawable/logo"
-                android:id="@+id/logo"
-                android:layout_weight="1" />
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
-            <ImageButton
-                android:layout_width="350dp"
-                android:layout_height="match_parent"
-                app:srcCompat="@drawable/pianoicon"
-                android:background="#7e7e7e"
-                android:id="@+id/pianoicon"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter"
-                android:layout_weight="1" />
+                <ImageButton
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter"
+                    app:srcCompat="@drawable/shaker"
+                    android:background="#7e7e7e"
+                    android:paddingBottom="8dp"
+                    android:paddingTop="8dp"
+                    android:paddingRight="20dp"
+                    android:id="@+id/shakerbutton"
+                    android:layout_weight="1" />
+
+                <ImageButton
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter"
+                    android:padding="3dp"
+                    app:srcCompat="@drawable/logo"
+                    android:background="#7e7e7e"
+                    android:layout_weight="1"
+                    android:id="@+id/logo" />
+
+                <ImageButton
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:background="#7e7e7e"
+                    android:scaleType="fitCenter"
+                    android:paddingBottom="8dp"
+                    android:paddingTop="8dp"
+                    android:paddingLeft="20dp"
+                    app:srcCompat="@drawable/pianoicon"
+                    android:id="@+id/pianobutton"
+                    android:layout_weight="1" />
+
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="3">
+
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+
+                android:layout_weight="3">
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="35dp"
+                    >
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/onepie"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:rotation="-0.1"
+                        android:id="@+id/violin_c"
+                        android:tint="#ffcd73" />
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/onepie"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:rotation="51.4"
+                        android:id="@+id/violin_d"
+                        android:tint="#ffd9a0" />
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/onepie"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:rotation="102.8"
+                        android:id="@+id/violin_e"
+                        android:tint="#ffe4bf" />
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/onepie"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:rotation="154.2"
+                        android:id="@+id/violin_f"
+                        android:tint="#b68800" />
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/onepie"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:rotation="205.6"
+                        android:id="@+id/violin_g"
+                        android:tint="#d39e00" />
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/onepie"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:rotation="257"
+                        android:id="@+id/violin_a"
+                        android:tint="#eab000" />
+
+                    <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:srcCompat="@drawable/onepie"
+                        android:background="@null"
+                        android:scaleType="fitCenter"
+                        android:rotation="308.4"
+                        android:id="@+id/violin_b"
+                        android:tint="#ffc000" />
+
+
+                </RelativeLayout>
+
+
+
+                <ImageView
+                    android:layout_width="130dp"
+                    android:rotation="45"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@drawable/violinbow"
+                    android:layout_alignParentRight="true"
+                    android:scaleType="centerInside"
+                    android:paddingLeft="65dp"
+                    android:paddingBottom="40dp"
+                    android:id="@+id/violinbow" />
+
+                <ImageView
+                    android:layout_width="130dp"
+                    android:layout_height="match_parent"
+                    android:rotation="-90"
+                    app:srcCompat="@drawable/violin"
+                    android:scaleType="centerInside"
+                    android:paddingBottom="70dp"
+                    android:paddingRight="20dp"
+                    android:id="@+id/violin" />
+
+
+            </RelativeLayout>
+
+
         </LinearLayout>
-
-    </LinearLayout>
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srcCompat="@drawable/pie"
-
-        android:id="@+id/imageView4"
-        android:layout_marginTop="298dp"
-        android:layout_alignParentTop="true" />
-
+    </FrameLayout>
 </RelativeLayout>
