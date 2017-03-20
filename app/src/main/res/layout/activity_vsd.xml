@@ -74,6 +74,62 @@
                 android:layout_height="0dp"
                 android:layout_weight="3">
 
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    opencv:srcCompat="@drawable/drum_1_transparent"
+                    android:id="@+id/ride_cymbal"
+                    android:background="@null"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    opencv:srcCompat="@drawable/drum_6_transparent"
+                    android:background="@null"
+                    android:id="@+id/bass_drum"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    opencv:srcCompat="@drawable/base"
+                    android:id="@+id/base"
+                    android:layout_marginEnd="19dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignEnd="@+id/bass_drum" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    opencv:srcCompat="@drawable/drum_4_transparent"
+                    android:background="@null"
+                    android:id="@+id/tom_1"
+                    android:layout_alignTop="@+id/ride_cymbal"
+                    android:layout_alignStart="@+id/bass_drum"
+                    android:layout_marginStart="39dp" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    opencv:srcCompat="@drawable/drum_5_transparent"
+                    android:background="@null"
+                    android:id="@+id/tom_2"
+                    android:layout_alignBottom="@+id/tom_1"
+                    android:layout_toStartOf="@+id/crash_symbal" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    opencv:srcCompat="@drawable/drum_2_transparent"
+                    android:id="@+id/crash_symbal"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true" />
+
             </RelativeLayout>
 
 
