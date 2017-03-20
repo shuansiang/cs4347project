@@ -16,6 +16,7 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
@@ -54,6 +55,15 @@ public class DrumController extends ControllerBase {
             R.raw.a_piano,
             R.raw.b_piano
     };
+
+    private Scalar[] mDrumColours = {
+            new Scalar(255.0, 0, 0),
+            new Scalar(0, 255.0, 0),
+            new Scalar(0, 0, 255.0),
+            new Scalar(255.0, 255.0, 0),
+            new Scalar(0, 255.0, 255.0),
+    };
+
     private int[] mLoadedPianoIds;
 
 
@@ -193,6 +203,20 @@ public class DrumController extends ControllerBase {
         }
     }
 
+    private int getClosestColour(Scalar colour) {
+        double minDistance = Double.MAX_VALUE;
+        int minIndex = 0, i=0;
+        for (Scalar drumColour : mDrumColours) {
+            double distance = Core.norm(new Mat(1, 3, CvType.CV_16SC4, colour), new Mat(1, 3, CvType.CV_16SC4, drumColour));
+            if (distance < minDistance) {
+                minDistance = distance;
+                minIndex = i;
+            }
+            i++;
+        }
+        return minIndex;
+    }
+
     private class DrumCameraListener implements CameraBridgeViewBase.CvCameraViewListener2 {
         @Override
         public void onCameraViewStarted(int width, int height) {
@@ -207,7 +231,9 @@ public class DrumController extends ControllerBase {
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
             Scalar mean = Core.mean(inputFrame.rgba());
+            int closestColourIndex = getClosestColour(mean);
 //            Log.d("SP", "Mean: " + mean.val[0] + ", " + mean.val[1] + ", " + mean.val[2]);
+            Log.d("SP", "Closest Colour Index: " + closestColourIndex);
             mCurrentAverageColor = mean;
             return inputFrame.rgba();
         }
