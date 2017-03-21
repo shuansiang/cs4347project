@@ -21,7 +21,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
@@ -39,21 +38,31 @@ public class DrumController extends ControllerBase {
     // Test views
     private TextView mDebugTextView;
 
+    private int[] mGlowDrumViewIds = {
+            R.id.ride_cymbal_glow,
+            R.id.tom_2_glow,
+            R.id.bass_drum_glow,
+            R.id.tom_1_glow,
+            R.id.crash_symbal_glow,
+    };
+
+    private ArrayList<View> mGlowDrumViews;
+
     // Data
     private LinkedList<float[]> mAccelHistory = new LinkedList<>();
     private float[] mAccelerometerVal = new float[4];
 
+    private int mActiveDrum = 0;
+
     // Sound
     private SoundPool mSoundPool = null;
 
-    private int[] pianoSoundIds = {
-            R.raw.c_piano,
-            R.raw.d_piano,
-            R.raw.e_piano,
-            R.raw.f_piano,
-            R.raw.g_piano,
-            R.raw.a_piano,
-            R.raw.b_piano
+    private int[] mDrumSoundIds = {
+            R.raw.drum_ride,
+            R.raw.drum_tom_2,
+            R.raw.drum_bass,
+            R.raw.drum_tom_1,
+            R.raw.drum_crash_cymbal,
     };
 
     private Scalar[] mDrumColours = {
@@ -64,7 +73,7 @@ public class DrumController extends ControllerBase {
             new Scalar(0, 255.0, 255.0),
     };
 
-    private int[] mLoadedPianoIds;
+    private int[] mLoadedDrumIds;
 
 
     public DrumController(Context context, Activity parentActivity, CameraBridgeViewBase cameraView) {
@@ -76,6 +85,11 @@ public class DrumController extends ControllerBase {
 
         mParentActivity = parentActivity;
         mDebugTextView = ((VSDActivity) mParentActivity).getDebugGrav();
+
+        mGlowDrumViews = new ArrayList<>();
+        for (int i = 0; i < mGlowDrumViewIds.length; i++) {
+            mGlowDrumViews.add(mParentActivity.findViewById(mGlowDrumViewIds[i]));
+        }
 
         mSoundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
         mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
@@ -90,15 +104,25 @@ public class DrumController extends ControllerBase {
     }
 
     private void loadDrumSounds() {
-        mLoadedPianoIds = new int[pianoSoundIds.length];
-        for (int i = 0; i < pianoSoundIds.length; i++) {
-            mLoadedPianoIds[i] = mSoundPool.load(mContext, pianoSoundIds[i], 1);
+        mLoadedDrumIds = new int[mDrumSoundIds.length];
+        for (int i = 0; i < mDrumSoundIds.length; i++) {
+            mLoadedDrumIds[i] = mSoundPool.load(mContext, mDrumSoundIds[i], 1);
         }
     }
 
-    public void playSoundPress(View v) {
+    private void updateDrumView() {
+        for (int i = 0; i < mGlowDrumViews.size(); i++) {
+            if (i != mActiveDrum) {
+                mGlowDrumViews.get(i).setVisibility(View.INVISIBLE);
+            } else {
+                mGlowDrumViews.get(i).setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    public void playSoundPress(View v, float volume) {
         Log.d("SP","PLAYING SOUND: "+0);
-        mSoundPool.play(mLoadedPianoIds[0], 1, 1, 1, 0, 0 + 1);
+        mSoundPool.play(mLoadedDrumIds[mActiveDrum], volume, volume, 1, 0, 0 + 1);
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(mContext) {
@@ -153,6 +177,7 @@ public class DrumController extends ControllerBase {
     private void update(long deltaTimeMillis, float[] accelerometer) {
 //        checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
         updateLinearAccelSound(deltaTimeMillis, accelerometer);
+        updateDrumView();
     }
 
     private void updateLinearAccelSound(long deltaTimeMillis, float[] currentAccelerometer) {
@@ -171,14 +196,14 @@ public class DrumController extends ControllerBase {
 //            return;
 //        }
         mAccelHistory.add(currentAccelerometer.clone());
-        Log.d("TTS", "Sampling: " + currentAccelerometer[1]);
+//        Log.d("TTS", "Sampling: " + currentAccelerometer[1]);
 
-        StringBuilder str = new StringBuilder();
-        for (float[] val : mAccelHistory) {
-            str.append(String.format("%.3f", val[1]));
-            str.append(',');
-        }
-        Log.d("TTSL", str.toString());
+//        StringBuilder str = new StringBuilder();
+//        for (float[] val : mAccelHistory) {
+//            str.append(String.format("%.3f", val[1]));
+//            str.append(',');
+//        }
+//        Log.d("TTSL", str.toString());
 
         if (mAccelHistory.size() < 10) {
             return;
@@ -197,8 +222,9 @@ public class DrumController extends ControllerBase {
 //        Log.d("SP", String.format("Max of Swing: %.3f | Last: %.3f", maxSwing, mAccelHistory.get(mAccelHistory.size()-1)[1]));
         if (mAccelHistory.get(mAccelHistory.size() - 1)[1] < 2 && maxSwing > 2) {
             // End of hit
-            Log.d("TTS", "HIT!");
-            playSoundPress(null);
+            float volume = Math.max(Math.min(1.0f, (maxSwing-2) / 7.0f), 0.0f);
+            Log.d("TTS", "HIT! "+volume);
+            playSoundPress(null, volume);
             mAccelHistory = new LinkedList<>();
         }
     }
@@ -233,7 +259,8 @@ public class DrumController extends ControllerBase {
             Scalar mean = Core.mean(inputFrame.rgba());
             int closestColourIndex = getClosestColour(mean);
 //            Log.d("SP", "Mean: " + mean.val[0] + ", " + mean.val[1] + ", " + mean.val[2]);
-            Log.d("SP", "Closest Colour Index: " + closestColourIndex);
+            mActiveDrum = closestColourIndex;
+//            Log.d("SP", "Closest Colour Index: " + closestColourIndex);
             mCurrentAverageColor = mean;
             return inputFrame.rgba();
         }
