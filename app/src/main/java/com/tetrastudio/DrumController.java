@@ -51,7 +51,7 @@ public class DrumController extends ControllerBase {
     // Data
     private LinkedList<float[]> mAccelHistory = new LinkedList<>();
     private float[] mAccelerometerVal = new float[4];
-
+    private boolean mIsSwingingDown = false;
     private int mActiveDrum = 0;
 
     // Sound
@@ -66,11 +66,11 @@ public class DrumController extends ControllerBase {
     };
 
     private Scalar[] mDrumColours = {
-            new Scalar(255.0, 0, 0),
-            new Scalar(0, 255.0, 0),
-            new Scalar(0, 0, 255.0),
-            new Scalar(255.0, 255.0, 0),
-            new Scalar(0, 255.0, 255.0),
+            new Scalar(58.393345269097225, 166.12298177083332, 101.20939127604167), // Green
+            new Scalar(192.87634548611112, 120.40522243923611, 107.47523546006944), // Orange
+            new Scalar(175.71397135416666, 113.93810004340278, 157.77175455729167), // Pink
+            new Scalar(148.47259114583332, 144.60708658854168, 144.38650390625), // Beige
+            new Scalar(58, 58, 58), // Black
     };
 
     private int[] mLoadedDrumIds;
@@ -121,7 +121,7 @@ public class DrumController extends ControllerBase {
     }
 
     public void playSoundPress(View v, float volume) {
-        Log.d("SP","PLAYING SOUND: "+0);
+        Log.d("SP", "PLAYING SOUND: " + 0);
         mSoundPool.play(mLoadedDrumIds[mActiveDrum], volume, volume, 1, 0, 0 + 1);
     }
 
@@ -220,10 +220,15 @@ public class DrumController extends ControllerBase {
 
 //        Log.d("SP", ""+currentAccelerometer[1]);
 //        Log.d("SP", String.format("Max of Swing: %.3f | Last: %.3f", maxSwing, mAccelHistory.get(mAccelHistory.size()-1)[1]));
+        if (MathUtils.getOverallSlope(mAccelHistory, 1) < 0) {
+            mIsSwingingDown = true;
+        } else {
+            mIsSwingingDown = false;
+        }
         if (mAccelHistory.get(mAccelHistory.size() - 1)[1] < 2 && maxSwing > 2) {
             // End of hit
-            float volume = Math.max(Math.min(1.0f, (maxSwing-2) / 7.0f), 0.0f);
-            Log.d("TTS", "HIT! "+volume);
+            float volume = Math.max(Math.min(1.0f, (maxSwing - 2) / 7.0f), 0.0f);
+            Log.d("TTS", "HIT! " + volume);
             playSoundPress(null, volume);
             mAccelHistory = new LinkedList<>();
         }
@@ -231,7 +236,7 @@ public class DrumController extends ControllerBase {
 
     private int getClosestColour(Scalar colour) {
         double minDistance = Double.MAX_VALUE;
-        int minIndex = 0, i=0;
+        int minIndex = 0, i = 0;
         for (Scalar drumColour : mDrumColours) {
             double distance = Core.norm(new Mat(1, 3, CvType.CV_16SC4, colour), new Mat(1, 3, CvType.CV_16SC4, drumColour));
             if (distance < minDistance) {
@@ -256,12 +261,14 @@ public class DrumController extends ControllerBase {
 
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-            Scalar mean = Core.mean(inputFrame.rgba());
-            int closestColourIndex = getClosestColour(mean);
-//            Log.d("SP", "Mean: " + mean.val[0] + ", " + mean.val[1] + ", " + mean.val[2]);
-            mActiveDrum = closestColourIndex;
-//            Log.d("SP", "Closest Colour Index: " + closestColourIndex);
-            mCurrentAverageColor = mean;
+            if (!mIsSwingingDown) {
+                Scalar mean = Core.mean(inputFrame.rgba());
+                int closestColourIndex = getClosestColour(mean);
+                Log.d("SP", "Mean: " + mean.val[0] + ", " + mean.val[1] + ", " + mean.val[2]);
+                mActiveDrum = closestColourIndex;
+    //            Log.d("SP", "Closest Colour Index: " + closestColourIndex);
+                mCurrentAverageColor = mean;
+            }
             return inputFrame.rgba();
         }
     }
