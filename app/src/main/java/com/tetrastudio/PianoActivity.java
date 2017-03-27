@@ -6,6 +6,7 @@ import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 public class PianoActivity extends AppCompatActivity {
 
@@ -14,14 +15,22 @@ public class PianoActivity extends AppCompatActivity {
     private SensorManager mSensorManager;
     private Sensor mAccelSensor;
 
+	// Views
+	private TextView mDebugGrav;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_piano);
 
+		initViews();
         initSensors();
         initControllers();
     }
+
+	private void initViews() {
+		mDebugGrav = (TextView) findViewById(R.id.debugGrav);
+	}
 
     private void initSensors() {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -51,4 +60,8 @@ public class PianoActivity extends AppCompatActivity {
         super.onPause();
         pauseControllerSensors();
     }
+
+	public TextView getDebugGrav() {
+		return mDebugGrav;
+	}
 }

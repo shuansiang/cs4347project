@@ -16,12 +16,12 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true">
 
-        <LinearLayout
+		<LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ImageButton
+			<ImageButton
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
@@ -31,7 +31,7 @@
                 android:background="#7e7e7e"
                 android:id="@+id/logo" />
 
-            <RelativeLayout
+			<RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="7">
@@ -42,7 +42,7 @@
                     android:layout_height="match_parent">
 
 
-                    <Button
+					<Button
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         app:srcCompat="@drawable/whitekeys"
@@ -110,12 +110,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                    <LinearLayout
+					<LinearLayout
                         android:orientation="vertical"
                         android:layout_width="200dp"
                         android:layout_height="match_parent">
 
-                        <Button
+						<Button
                             android:id="@+id/a_sharp"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -160,12 +160,20 @@
                             android:layout_height="wrap_content"
                             android:id="@+id/c_sharp" />
                     </LinearLayout>
-                </RelativeLayout>
+
+				</RelativeLayout>
             </RelativeLayout>
 
 
         </LinearLayout>
-    </FrameLayout>
+
+		<TextView
+			android:id="@+id/debugGrav"
+			android:layout_width="match_parent"
+			android:layout_height="80dp"
+			android:layout_weight="0.55"
+			android:text="TextView"/>
+	</FrameLayout>
 
 </RelativeLayout>
 

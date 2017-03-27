@@ -9,6 +9,7 @@ import android.media.SoundPool;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -59,10 +60,14 @@ public class PianoController extends ControllerBase {
 
 	private float[] mAccelerometerVal = new float[4];
 
+	// Test views
+	private TextView mDebugTextView;
+
 	// Public constructor
 	public PianoController(Context context, Activity parentActivity) {
 		mContext = context;
 		mParentActivity = parentActivity;
+		mDebugTextView = ((PianoActivity) mParentActivity).getDebugGrav();
 
 		loadPianoSounds();
 		loadPianoButtons();
@@ -109,6 +114,7 @@ public class PianoController extends ControllerBase {
 	public void onSensorChanged(SensorEvent sensorEvent) {
 		if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			mAccelerometerVal = MathUtils.lowPass(sensorEvent.values.clone(), mAccelerometerVal);
+			mDebugTextView.setText(String.format("X:%f\nY:%f\nZ:%f", sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]));
 		}
 
 		update(mAccelerometerVal);
@@ -116,15 +122,15 @@ public class PianoController extends ControllerBase {
 
 	public void update(float[] accelerometer) {
 		if (accelerometer[2] > 4.5 && accelerometer[2] < 9.0) {
-			mOctaveOffset = 1;
-		} else if (accelerometer[2] >= 9.0) {
 			mOctaveOffset = 2;
+		} else if (accelerometer[2] >= 9.0) {
+			mOctaveOffset = 3;
 		} else if (accelerometer[2] < -4.5 && accelerometer[2] > -9.0) {
 			mOctaveOffset = 0.5f;
 		} else if (accelerometer[2] <= -9.0) {
 			mOctaveOffset = 0.25f;
 		} else {
-			mOctaveOffset = 0;
+			mOctaveOffset = 1;
 		}
 	}
 
