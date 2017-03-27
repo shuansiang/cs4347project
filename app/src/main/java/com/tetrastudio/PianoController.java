@@ -121,13 +121,13 @@ public class PianoController extends ControllerBase {
 	}
 
 	public void update(float[] accelerometer) {
-		if (accelerometer[2] > 4.5 && accelerometer[2] < 9.0) {
-			mOctaveOffset = 2;
-		} else if (accelerometer[2] >= 9.0) {
+		if (accelerometer[2] >= 9.0) {
 			mOctaveOffset = 3;
-		} else if (accelerometer[2] < -4.5 && accelerometer[2] > -9.0) {
+		} else if (accelerometer[2] > 6.0 && accelerometer[2] < 9.0) {
+			mOctaveOffset = 2;
+		} else if (accelerometer[2] < -1.0 && accelerometer[2] > -4.5) {
 			mOctaveOffset = 0.5f;
-		} else if (accelerometer[2] <= -9.0) {
+		} else if (accelerometer[2] <= -4.5) {
 			mOctaveOffset = 0.25f;
 		} else {
 			mOctaveOffset = 1;
