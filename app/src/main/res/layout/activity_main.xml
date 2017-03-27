@@ -14,13 +14,13 @@
     tools:context="com.tetrastudio.MainActivity">
 
     <ImageButton
+        android:id="@+id/imageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@null"
-        app:srcCompat="@drawable/logo"
-        android:layout_marginTop="137dp"
-        android:id="@+id/imageButton"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:onClick="testt"/>
+        android:layout_marginTop="137dp"
+        android:background="@null"
+        android:onClick="start"
+        app:srcCompat="@drawable/logo" />
 </RelativeLayout>

@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void testt(View v) {
+    public void start(View v) {
         Log.d("TSTUDIO","HI");
         startActivity(new Intent(MainActivity.this, PianoActivity.class));
 
