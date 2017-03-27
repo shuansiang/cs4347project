@@ -55,6 +55,10 @@ public class PianoController extends ControllerBase {
 	};
 	private int[] mLoadedPianoSoundIds;
 
+	private float mOctaveOffset = 0;
+
+	private float[] mAccelerometerVal = new float[4];
+
 	// Public constructor
 	public PianoController(Context context, Activity parentActivity) {
 		mContext = context;
@@ -95,15 +99,33 @@ public class PianoController extends ControllerBase {
 			final int idx = i;
 			mPianoButtons.get(i).setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					mSoundPool.play(mLoadedPianoSoundIds[idx], 1, 1, 1, 0, 1);
+					mSoundPool.play(mLoadedPianoSoundIds[idx], 1, 1, 1, 0, mOctaveOffset);
 				}
 			});
 		}
 	}
 
 	@Override
-	public void onSensorChanged(SensorEvent event) {
+	public void onSensorChanged(SensorEvent sensorEvent) {
+		if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+			mAccelerometerVal = MathUtils.lowPass(sensorEvent.values.clone(), mAccelerometerVal);
+		}
 
+		update(mAccelerometerVal);
+	}
+
+	public void update(float[] accelerometer) {
+		if (accelerometer[2] > 4.5 && accelerometer[2] < 9.0) {
+			mOctaveOffset = 1;
+		} else if (accelerometer[2] >= 9.0) {
+			mOctaveOffset = 2;
+		} else if (accelerometer[2] < -4.5 && accelerometer[2] > -9.0) {
+			mOctaveOffset = 0.5f;
+		} else if (accelerometer[2] <= -9.0) {
+			mOctaveOffset = 0.25f;
+		} else {
+			mOctaveOffset = 0;
+		}
 	}
 
 	@Override
