@@ -2,6 +2,7 @@ package com.tetrastudio;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.media.AudioManager;
@@ -26,33 +27,33 @@ public class PianoController extends ControllerBase {
 
 	private int[] mPianoButtonIds = {
 		R.id.c,
-		R.id.c_sharp,
 		R.id.d,
-		R.id.d_sharp,
 		R.id.e,
 		R.id.f,
-		R.id.f_sharp,
 		R.id.g,
-		R.id.g_sharp,
 		R.id.a,
-		R.id.a_sharp,
-		R.id.b
+		R.id.b,
+		R.id.c_sharp,
+		R.id.d_sharp,
+		R.id.f_sharp,
+		R.id.g_sharp,
+		R.id.a_sharp
 	};
 	private ArrayList<Button> mPianoButtons;
 
 	private int[] mPianoSoundIds = {
 		R.raw.c_piano,
-		R.raw.c_sharp_piano,
 		R.raw.d_piano,
-		R.raw.d_sharp_piano,
 		R.raw.e_piano,
 		R.raw.f_piano,
-		R.raw.f_sharp_piano,
 		R.raw.g_piano,
-		R.raw.g_sharp_piano,
 		R.raw.a_piano,
-		R.raw.a_sharp_piano,
-		R.raw.b_piano
+		R.raw.b_piano,
+		R.raw.c_sharp_piano,
+		R.raw.d_sharp_piano,
+		R.raw.f_sharp_piano,
+		R.raw.g_sharp_piano,
+		R.raw.a_sharp_piano
 	};
 	private int[] mLoadedPianoSoundIds;
 
@@ -120,17 +121,30 @@ public class PianoController extends ControllerBase {
 		update(mAccelerometerVal);
 	}
 
+	// Update piano properties
 	public void update(float[] accelerometer) {
 		if (accelerometer[2] >= 9.0) {
 			mOctaveOffset = 3;
+			updateKeyboardColours(R.color.pink2);
 		} else if (accelerometer[2] > 6.0 && accelerometer[2] < 9.0) {
 			mOctaveOffset = 2;
+			updateKeyboardColours(R.color.pink1);
 		} else if (accelerometer[2] < -1.0 && accelerometer[2] > -4.5) {
 			mOctaveOffset = 0.5f;
+			updateKeyboardColours(R.color.pink1);
 		} else if (accelerometer[2] <= -4.5) {
 			mOctaveOffset = 0.25f;
+			updateKeyboardColours(R.color.pink2);
 		} else {
 			mOctaveOffset = 1;
+			updateKeyboardColours(R.color.white);
+		}
+	}
+
+	// Change colour of keyboard according to octaves
+	public void updateKeyboardColours(int color) {
+		for (int i=0; i<mPianoButtons.size()-5; i++) {
+			mPianoButtons.get(i).setBackgroundResource(color);
 		}
 	}
 
