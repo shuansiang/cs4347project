@@ -1,4 +1,4 @@
-package com.example.desmond.cs4347shaker;
+package com.tetrastudio;
 
 /**
  * Created by Desmond on 29/3/17.
