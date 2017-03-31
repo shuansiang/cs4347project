@@ -37,6 +37,7 @@ public class VSDActivity extends AppCompatActivity {
     private Sensor mAccelSensor;
     //Shaker
     private ShakeListener mShaker;
+    private Toast mToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,18 +131,31 @@ public class VSDActivity extends AppCompatActivity {
     private void shakerControl(){
         mShaker = new ShakeListener(this);
         mShaker.setOnShakeListener(new ShakeListener.OnShakeListener () {
-            public void onShake()
+            public void onShake(int id)
             {
-                playSound();
-                Toast.makeText(VSDActivity.this, "Shake " , Toast.LENGTH_LONG).show();
-
+                playSound(id);
+                if(mToast != null) { mToast.cancel(); }
+                if( id > 0 ) {
+                    mToast = Toast.makeText(VSDActivity.this,"Hard Shake",Toast.LENGTH_SHORT);
+                    mToast.show();
+                }
+                else {
+                    mToast = Toast.makeText(VSDActivity.this,"Soft Shake",Toast.LENGTH_SHORT);
+                    mToast.show();
+                }
             }
         });
     }
 
     //ShakerSound
-    protected void playSound(){
-        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.hard);
+    protected void playSound(int id){
+        MediaPlayer mediaPlayer;
+        if (id > 0)
+            mediaPlayer = MediaPlayer.create(this, R.raw.hard);
+        else
+            mediaPlayer = MediaPlayer.create(this, R.raw.soft);
+
         mediaPlayer.start();
+
     }
 }

@@ -1,12 +1,8 @@
 package com.tetrastudio;
 
-/**
- * Created by Desmond on 29/3/17.
- */
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -15,7 +11,8 @@ import java.lang.UnsupportedOperationException;
 
 public class ShakeListener implements SensorEventListener {
     private String TAG = ShakeListener.class.getSimpleName();
-    private static final int FORCE_THRESHOLD = 150;
+    private static final int FORCE_THRESHOLD_SOFT = 150;
+    private static final int FORCE_THRESHOLD_HARD = 1000;
     private static final int TIME_THRESHOLD = 100;
     private static final int SHAKE_TIMEOUT = 500;
     private static final int SHAKE_DURATION = 1000;
@@ -31,7 +28,7 @@ public class ShakeListener implements SensorEventListener {
     private long mLastForce;
 
     public interface OnShakeListener {
-        public void onShake();
+        public void onShake(int id);
     }
 
     public ShakeListener(Context context) {
@@ -75,7 +72,6 @@ public class ShakeListener implements SensorEventListener {
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     public void onSensorChanged(SensorEvent event) {
@@ -94,24 +90,31 @@ public class ShakeListener implements SensorEventListener {
                     + event.values[2] - mLastX - mLastY
                     - mLastZ)
                     / diff * 10000;
-            if (speed > FORCE_THRESHOLD) {
-                if ((++mShakeCount >= SHAKE_COUNT)
-                        && (now - mLastShake > SHAKE_DURATION)) {
-                    mLastShake = now;
-                    mShakeCount = 0;
-                    Log.d(TAG,"ShakeListener mShakeListener---->"+mShakeListener);
-                    if (mShakeListener != null) {
-                        mShakeListener.onShake();
-                    }
-                }
-                mLastForce = now;
+            if (speed > FORCE_THRESHOLD_HARD) {
+                checkSpeed(1, now);
+            }
+            else if (speed > FORCE_THRESHOLD_SOFT){
+                checkSpeed(0, now);
             }
             mLastTime = now;
             mLastX = event.values[0];
             mLastY = event.values[1];
             mLastZ = event.values[2];
-            Log.d(TAG,"X:" + mLastX + " Y:" + mLastY + " Z:" + mLastZ);
+            Log.d(TAG, "X,Y,Z Values: " +mLastX +", " +mLastY +", " +mLastZ);
         }
+    }
+
+    private void checkSpeed (int id, long now){
+        if ((++mShakeCount >= SHAKE_COUNT)
+                && (now - mLastShake > SHAKE_DURATION)) {
+            mLastShake = now;
+            mShakeCount = 0;
+            Log.d(TAG,"ShakeListener mShakeListener---->"+mShakeListener);
+            if (mShakeListener != null) {
+                mShakeListener.onShake(id);
+            }
+        }
+        mLastForce = now;
     }
 
 }
