@@ -110,6 +110,7 @@ public class ShakeListener implements SensorEventListener {
             mLastX = event.values[0];
             mLastY = event.values[1];
             mLastZ = event.values[2];
+            Log.d(TAG,"X:" + mLastX + " Y:" + mLastY + " Z:" + mLastZ);
         }
     }
 

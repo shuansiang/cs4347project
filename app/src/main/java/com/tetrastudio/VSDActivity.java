@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import android.media.MediaPlayer;
+import android.widget.Toast;
+
 public class VSDActivity extends AppCompatActivity {
 
     private static final int CAMERA_REQUEST_CODE = 123;
@@ -32,12 +35,16 @@ public class VSDActivity extends AppCompatActivity {
     private DrumController mDrumController;
     private SensorManager mSensorManager;
     private Sensor mAccelSensor;
+    //Shaker
+    private ShakeListener mShaker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vsd);
 
+
+        shakerControl();
         initViews();
         initSensors();
         initControllers();
@@ -85,12 +92,14 @@ public class VSDActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mShaker.resume();
         resumeControllerSensors();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        mShaker.pause();
         pauseControllerSensors();
     }
 
@@ -116,5 +125,23 @@ public class VSDActivity extends AppCompatActivity {
 
     public TextView getDebugGrav() {
         return mDebugGrav;
+    }
+
+    private void shakerControl(){
+        mShaker = new ShakeListener(this);
+        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener () {
+            public void onShake()
+            {
+                playSound();
+                Toast.makeText(VSDActivity.this, "Shake " , Toast.LENGTH_LONG).show();
+
+            }
+        });
+    }
+
+    //ShakerSound
+    protected void playSound(){
+        MediaPlayer mediaPlayer = MediaPlayer.create(this, R.raw.hard);
+        mediaPlayer.start();
     }
 }
