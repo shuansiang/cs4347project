@@ -2,6 +2,7 @@ package com.tetrastudio;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -9,6 +10,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import org.opencv.android.CameraBridgeViewBase;
@@ -157,5 +159,9 @@ public class VSDActivity extends AppCompatActivity {
 
         mediaPlayer.start();
 
+    }
+
+    public void toPianoPage(View v) {
+        startActivity(new Intent(VSDActivity.this, PianoActivity.class));
     }
 }

@@ -64,6 +64,7 @@
                     android:paddingLeft="20dp"
                     android:paddingTop="8dp"
                     android:scaleType="fitCenter"
+                    android:onClick="toPianoPage"
                     app:srcCompat="@drawable/pianoicon"/>
 
 

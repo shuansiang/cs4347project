@@ -1,11 +1,13 @@
 package com.tetrastudio;
 
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 public class PianoActivity extends AppCompatActivity {
@@ -59,6 +61,10 @@ public class PianoActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         pauseControllerSensors();
+    }
+
+    public void toVSDPage(View v) {
+        startActivity(new Intent(PianoActivity.this, VSDActivity.class));
     }
 
 	public TextView getDebugGrav() {

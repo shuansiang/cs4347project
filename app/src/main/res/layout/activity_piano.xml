@@ -29,6 +29,7 @@
                 android:padding="3dp"
                 app:srcCompat="@drawable/logo"
                 android:background="#7e7e7e"
+                android:onClick="toVSDPage"
                 android:id="@+id/logo" />
 
 			<RelativeLayout
