@@ -73,7 +73,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="3">
+                android:layout_weight="4">
 
 
                 <RelativeLayout
@@ -82,7 +82,7 @@
                     android:id="@+id/tom_2_layout"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentStart="true"
-                    android:layout_marginStart="110dp"
+                    android:layout_marginStart="80dp"
                     android:layout_marginTop="10dp">
 
                     <ImageButton
@@ -102,7 +102,8 @@
                 <RelativeLayout
                     android:id="@+id/ride_cymbal_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="20dp">
 
                     <ImageButton
                         android:id="@+id/ride_cymbal"
@@ -151,7 +152,7 @@
                     android:id="@+id/tom_1_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="150dp"
+                    android:layout_marginLeft="115dp"
                     android:layout_marginTop="20dp">
 
                     <ImageButton
@@ -173,7 +174,8 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:id="@+id/crash_symbal_layout">
+                    android:id="@+id/crash_symbal_layout"
+                    android:layout_marginTop="5dp">
 
                     <ImageButton
                         android:id="@+id/crash_symbal"
@@ -230,7 +232,9 @@
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_weight="3">
+                        android:layout_weight="3"
+                        android:scaleX="1.1"
+                        android:scaleY="1.1">
 
                         <ImageButton
                             android:id="@+id/violin_c"
