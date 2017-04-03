@@ -74,6 +74,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="4"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:id="@+id/drumLayout">
 
                 <RelativeLayout
@@ -83,19 +86,29 @@
                     android:layout_alignParentTop="true"
                     android:layout_alignParentStart="true"
                     android:layout_marginStart="80dp"
-                    android:layout_marginTop="10dp">
+                    android:layout_marginTop="10dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:clickable="false"
+                    >
 
                     <ImageButton
                         android:id="@+id/tom_2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@null"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
                         opencv:srcCompat="@drawable/drum_5_transparent"/>
                     <ImageButton
                         android:id="@+id/tom_2_glow"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@null"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
                         opencv:srcCompat="@drawable/drum_5_transparent_glow"/>
                 </RelativeLayout>
 
@@ -103,6 +116,9 @@
                     android:id="@+id/ride_cymbal_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:clickable="false"
                     android:layout_marginBottom="20dp">
 
                     <ImageButton
@@ -112,6 +128,9 @@
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
                         android:background="@null"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
                         opencv:srcCompat="@drawable/drum_1_transparent"/>
 
                     <ImageButton
@@ -121,13 +140,19 @@
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
                         android:background="@null"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
                         opencv:srcCompat="@drawable/drum_1_transparent_glow"/>
                 </RelativeLayout>
 
                 <RelativeLayout
                     android:id="@+id/bass_drum_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:clickable="false">
 
                     <ImageButton
                         android:id="@+id/bass_drum"
@@ -136,6 +161,9 @@
                         android:layout_alignParentTop="true"
                         android:layout_centerHorizontal="true"
                         android:background="@null"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
                         opencv:srcCompat="@drawable/drum_6_transparent"/>
 
                     <ImageButton
@@ -145,6 +173,9 @@
                         android:layout_alignParentTop="true"
                         android:layout_centerHorizontal="true"
                         android:background="@null"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
                         opencv:srcCompat="@drawable/drum_6_transparent_glow"/>
                 </RelativeLayout>
 
@@ -153,7 +184,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginLeft="115dp"
-                    android:layout_marginTop="20dp">
+                    android:layout_marginTop="20dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:clickable="false">
 
                     <ImageButton
                         android:id="@+id/tom_1"
@@ -161,21 +195,30 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="39dp"
                         android:background="@null"
-                        opencv:srcCompat="@drawable/drum_4_transparent"/>
+                        opencv:srcCompat="@drawable/drum_4_transparent"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"/>
                     <ImageButton
                         android:id="@+id/tom_1_glow"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="39dp"
                         android:background="@null"
-                        opencv:srcCompat="@drawable/drum_4_transparent_glow"/>
+                        opencv:srcCompat="@drawable/drum_4_transparent_glow"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"/>
                 </RelativeLayout>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:id="@+id/crash_symbal_layout"
-                    android:layout_marginTop="5dp">
+                    android:layout_marginTop="5dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:clickable="false">
 
                     <ImageButton
                         android:id="@+id/crash_symbal"
@@ -184,7 +227,10 @@
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentTop="true"
                         android:background="@null"
-                        opencv:srcCompat="@drawable/drum_2_transparent"/>
+                        opencv:srcCompat="@drawable/drum_2_transparent"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"/>
 
                     <ImageButton
                         android:id="@+id/crash_symbal_glow"
@@ -193,6 +239,9 @@
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentTop="true"
                         android:background="@null"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"
                         opencv:srcCompat="@drawable/drum_2_transparent_glow"/>
 
                     <ImageView
@@ -201,7 +250,10 @@
                         android:layout_height="wrap_content"
                         opencv:srcCompat="@drawable/base"
                         android:layout_alignParentTop="true"
-                        android:layout_centerHorizontal="true"/>
+                        android:layout_centerHorizontal="true"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:clickable="false"/>
 
                 </RelativeLayout>
 

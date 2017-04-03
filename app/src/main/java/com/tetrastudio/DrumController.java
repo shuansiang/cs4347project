@@ -264,7 +264,7 @@ public class DrumController extends ControllerBase {
             if (!mIsSwingingDown) {
                 Scalar mean = Core.mean(inputFrame.rgba());
                 int closestColourIndex = getClosestColour(mean);
-                Log.d("SP", "Mean: " + mean.val[0] + ", " + mean.val[1] + ", " + mean.val[2]);
+//                Log.d("SP", "Mean: " + mean.val[0] + ", " + mean.val[1] + ", " + mean.val[2]);
                 mActiveDrum = closestColourIndex;
     //            Log.d("SP", "Closest Colour Index: " + closestColourIndex);
                 mCurrentAverageColor = mean;
