@@ -10,6 +10,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
@@ -30,6 +31,7 @@ public class VSDActivity extends AppCompatActivity {
     // Views
     private CameraBridgeViewBase mOpenCvCameraView;
     private TextView mDebugGrav;
+    private View mDrumLayout;
 
     // Controllers
     private ArrayList<Pair<ControllerBase, Sensor>> mControllers;
@@ -60,6 +62,18 @@ public class VSDActivity extends AppCompatActivity {
     private void initViews() {
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.cameraView);
         mDebugGrav = (TextView) findViewById(R.id.debugGrav);
+        mDrumLayout = (View) findViewById(R.id.drumLayout);
+        mDrumLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                    mDrumController.setEnabled(false);
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                    mDrumController.setEnabled(true);
+                }
+                return false;
+            }
+        });
     }
 
     private void initSensors() {
@@ -130,19 +144,19 @@ public class VSDActivity extends AppCompatActivity {
         return mDebugGrav;
     }
 
-    private void shakerControl(){
+    private void shakerControl() {
         mShaker = new ShakeListener(this);
-        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener () {
-            public void onShake(int id)
-            {
+        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener() {
+            public void onShake(int id) {
                 playSound(id);
-                if(mToast != null) { mToast.cancel(); }
-                if( id > 0 ) {
-                    mToast = Toast.makeText(VSDActivity.this,"Hard Shake",Toast.LENGTH_SHORT);
-                    mToast.show();
+                if (mToast != null) {
+                    mToast.cancel();
                 }
-                else {
-                    mToast = Toast.makeText(VSDActivity.this,"Soft Shake",Toast.LENGTH_SHORT);
+                if (id > 0) {
+                    mToast = Toast.makeText(VSDActivity.this, "Hard Shake", Toast.LENGTH_SHORT);
+                    mToast.show();
+                } else {
+                    mToast = Toast.makeText(VSDActivity.this, "Soft Shake", Toast.LENGTH_SHORT);
                     mToast.show();
                 }
             }
@@ -150,7 +164,7 @@ public class VSDActivity extends AppCompatActivity {
     }
 
     //ShakerSound
-    protected void playSound(int id){
+    protected void playSound(int id) {
         MediaPlayer mediaPlayer;
         if (id > 0)
             mediaPlayer = MediaPlayer.create(this, R.raw.hard);
