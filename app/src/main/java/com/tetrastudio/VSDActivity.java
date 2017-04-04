@@ -50,7 +50,6 @@ public class VSDActivity extends AppCompatActivity {
         setContentView(R.layout.activity_vsd);
 
 
-        shakerControl();
         initViews();
         initSensors();
         initControllers();
@@ -70,9 +69,11 @@ public class VSDActivity extends AppCompatActivity {
                 if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
                     Log.d("SP", "ACTION UP");
                     mDrumController.setEnabled(false);
+                    mShaker.setEnabled(true);
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                     Log.d("SP", "ACTION DOWN");
                     mDrumController.setEnabled(true);
+                    mShaker.setEnabled(false);
                 }
                 return false;
             }
@@ -88,13 +89,36 @@ public class VSDActivity extends AppCompatActivity {
         mControllers = new ArrayList<>();
         // Controllers for each type of instrument can be added here
         mDrumController = new DrumController(this, this, mOpenCvCameraView);
-        mDrumController.setEnabled(true);
+        mDrumController.setEnabled(false);
+
+        mShaker = new ShakeListener(this, this);
+        mShaker.setEnabled(true);
+//        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener() {
+//            public void onShake(int id) {
+//                playSound(id);
+//                if (mToast != null) {
+//                    mToast.cancel();
+//                }
+//                if (id > 0) {
+//                    mToast = Toast.makeText(VSDActivity.this, "Hard Shake", Toast.LENGTH_SHORT);
+//                    mToast.show();
+//                } else {
+//                    mToast = Toast.makeText(VSDActivity.this, "Soft Shake", Toast.LENGTH_SHORT);
+//                    mToast.show();
+//                }
+//            }
+//        });
+//        shakerControl();
+
         mControllers.add(new Pair<ControllerBase, Sensor>(mDrumController, mAccelSensor));
+        mControllers.add(new Pair<ControllerBase, Sensor>(mShaker, mAccelSensor));
     }
 
     private void resumeControllerSensors() {
         for (Pair<ControllerBase, Sensor> controllerEntry : mControllers) {
-            mSensorManager.registerListener(controllerEntry.first, controllerEntry.second, SensorManager.SENSOR_DELAY_GAME);
+            if (controllerEntry.second != null) {
+                mSensorManager.registerListener(controllerEntry.first, controllerEntry.second, SensorManager.SENSOR_DELAY_GAME);
+            }
         }
     }
 
@@ -102,6 +126,9 @@ public class VSDActivity extends AppCompatActivity {
         HashSet<ControllerBase> encounteredControllers = new HashSet<>();
         for (Pair<ControllerBase, Sensor> controllerEntry : mControllers) {
             if (encounteredControllers.contains(controllerEntry.first)) {
+                continue;
+            }
+            if (controllerEntry.second == null) {
                 continue;
             }
             encounteredControllers.add(controllerEntry.first);
@@ -112,14 +139,14 @@ public class VSDActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mShaker.resume();
+//        mShaker.resume();
         resumeControllerSensors();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mShaker.pause();
+//        mShaker.pause();
         pauseControllerSensors();
     }
 
@@ -147,24 +174,24 @@ public class VSDActivity extends AppCompatActivity {
         return mDebugGrav;
     }
 
-    private void shakerControl() {
-        mShaker = new ShakeListener(this);
-        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener() {
-            public void onShake(int id) {
-                playSound(id);
-                if (mToast != null) {
-                    mToast.cancel();
-                }
-                if (id > 0) {
-                    mToast = Toast.makeText(VSDActivity.this, "Hard Shake", Toast.LENGTH_SHORT);
-                    mToast.show();
-                } else {
-                    mToast = Toast.makeText(VSDActivity.this, "Soft Shake", Toast.LENGTH_SHORT);
-                    mToast.show();
-                }
-            }
-        });
-    }
+//    private void shakerControl() {
+//        mShaker = new ShakeListener(this);
+//        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener() {
+//            public void onShake(int id) {
+//                playSound(id);
+//                if (mToast != null) {
+//                    mToast.cancel();
+//                }
+//                if (id > 0) {
+//                    mToast = Toast.makeText(VSDActivity.this, "Hard Shake", Toast.LENGTH_SHORT);
+//                    mToast.show();
+//                } else {
+//                    mToast = Toast.makeText(VSDActivity.this, "Soft Shake", Toast.LENGTH_SHORT);
+//                    mToast.show();
+//                }
+//            }
+//        });
+//    }
 
     //ShakerSound
     protected void playSound(int id) {

@@ -115,7 +115,9 @@ public class DrumController extends ControllerBase {
             if (i != mActiveDrum) {
                 mGlowDrumViews.get(i).setVisibility(View.INVISIBLE);
             } else {
-                mGlowDrumViews.get(i).setVisibility(View.VISIBLE);
+                if (mIsEnabled) {
+                    mGlowDrumViews.get(i).setVisibility(View.VISIBLE);
+                }
             }
         }
     }
@@ -123,6 +125,16 @@ public class DrumController extends ControllerBase {
     public void playSoundPress(View v, float volume) {
         Log.d("SP", "PLAYING SOUND: " + 0);
         mSoundPool.play(mLoadedDrumIds[mActiveDrum], volume, volume, 1, 0, 0 + 1);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        mIsEnabled = enabled;
+        for (View view : mGlowDrumViews) {
+            if (!mIsEnabled) {
+               view.setVisibility(View.INVISIBLE);
+            }
+        }
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(mContext) {

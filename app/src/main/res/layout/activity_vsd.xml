@@ -32,17 +32,33 @@
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
-                <ImageButton
-                    android:id="@+id/shakerbutton"
+                <RelativeLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:background="#7e7e7e"
-                    android:paddingBottom="8dp"
-                    android:paddingRight="20dp"
-                    android:paddingTop="8dp"
-                    android:scaleType="fitCenter"
-                    app:srcCompat="@drawable/shaker"/>
+                    android:background="#7e7e7e">
+
+                    <ImageButton
+                        android:id="@+id/shakerbutton"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingBottom="8dp"
+                        android:paddingRight="20dp"
+                        android:paddingTop="8dp"
+                        android:scaleType="fitCenter"
+                        android:background="#7e7e7e"
+                        app:srcCompat="@drawable/shaker"/>
+                    <ImageButton
+                        android:id="@+id/shaker_button_glow"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:paddingBottom="8dp"
+                        android:paddingRight="20dp"
+                        android:paddingTop="8dp"
+                        android:scaleType="fitCenter"
+                        android:background="#7e7e7e"
+                        app:srcCompat="@drawable/shaker_glow"/>
+                </RelativeLayout>
 
                 <ImageButton
                     android:id="@+id/logo"
@@ -386,6 +402,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="67dp"
-        android:text="TextView"/>
+        android:text="TextView"
+        android:enabled="false"/>
 
 </RelativeLayout>
