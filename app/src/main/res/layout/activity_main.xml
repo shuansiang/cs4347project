@@ -10,8 +10,13 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="#545454"
-    tools:context="com.tetrastudio.MainActivity">
+    android:background="#EEEEEE"
+    tools:context="com.tetrastudio.MainActivity"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:clickable="true"
+    android:onClick="start"
+    >
 
     <ImageButton
         android:id="@+id/imageButton"
@@ -21,6 +26,21 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="137dp"
         android:background="@null"
-        android:onClick="start"
-        app:srcCompat="@drawable/logo" />
+        app:srcCompat="@drawable/logo"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="false"/>
+
+    <TextView
+        android:text="Tap to play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="39dp"
+        android:id="@+id/textView"
+        android:textSize="18sp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="false"/>
 </RelativeLayout>

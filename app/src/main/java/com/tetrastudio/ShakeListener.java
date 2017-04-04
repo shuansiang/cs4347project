@@ -16,12 +16,12 @@ import java.lang.UnsupportedOperationException;
 
 public class ShakeListener extends ControllerBase {
     private String TAG = ShakeListener.class.getSimpleName();
-    private static final int FORCE_THRESHOLD_SOFT = 150;
+    private static final int FORCE_THRESHOLD_SOFT = 520;
     private static final int FORCE_THRESHOLD_HARD = 1000;
-    private static final int TIME_THRESHOLD = 100;
-    private static final int SHAKE_TIMEOUT = 500;
-    private static final int SHAKE_DURATION = 1000;
-    private static final int SHAKE_COUNT = 5;
+    private static final int TIME_THRESHOLD = 50;
+    private static final int SHAKE_TIMEOUT = 800;
+    private static final int SHAKE_DURATION = 100;
+    private static final int SHAKE_COUNT = 3;
 
     private SensorManager mSensorMgr;
     private float mLastX = -1.0f, mLastY = -1.0f, mLastZ = -1.0f;
@@ -38,14 +38,14 @@ public class ShakeListener extends ControllerBase {
     private SoundPool mSoundPool = null;
 
     private int[] mShakerSoundIds = {
-            R.raw.hard,
-            R.raw.soft,
+            R.raw.shaker,
+            R.raw.shaker,
     };
 
     private int[] mLoadedShakerIds;
 
     public interface OnShakeListener {
-        public void onShake(int id);
+        public void onShake(float speed);
     }
 
     public ShakeListener(Context context, Activity parentActivity) {
@@ -64,20 +64,14 @@ public class ShakeListener extends ControllerBase {
 //        resume();
 
         setOnShakeListener(new ShakeListener.OnShakeListener() {
-            public void onShake(int id) {
+            public void onShake(float speed) {
                 if (mIsEnabled) {
-                    playSound(id);
+                    playSound(speed);
                 }
 //                if (mToast != null) {
 //                    mToast.cancel();
 //                }
-                if (id > 0) {
-//                    mToast = Toast.makeText(VSDActivity.this, "Hard Shake", Toast.LENGTH_SHORT);
-//                    mToast.show();
-                } else {
-//                    mToast = Toast.makeText(VSDActivity.this, "Soft Shake", Toast.LENGTH_SHORT);
-//                    mToast.show();
-                }
+
             }
         });
     }
@@ -139,44 +133,48 @@ public class ShakeListener extends ControllerBase {
         if ((now - mLastTime) > TIME_THRESHOLD) {
             long diff = now - mLastTime;
             float speed = Math.abs(event.values[0]
-                    + event.values[1]
-                    + event.values[2] - mLastX - mLastY
-                    - mLastZ)
+                    //+ event.values[1]
+                    //+ event.values[2] - mLastX - mLastY
+                    //- mLastZ)
+            -mLastX)
                     / diff * 10000;
-            if (speed > FORCE_THRESHOLD_HARD) {
-                checkSpeed(1, now);
-            } else if (speed > FORCE_THRESHOLD_SOFT) {
-                checkSpeed(0, now);
+            if (speed >= FORCE_THRESHOLD_HARD) {
+                checkSpeed(speed, now);
+            } else if (speed >= FORCE_THRESHOLD_SOFT) {
+                checkSpeed(speed, now);
             }
             mLastTime = now;
             mLastX = event.values[0];
             mLastY = event.values[1];
             mLastZ = event.values[2];
             Log.d(TAG, "X,Y,Z Values: " + mLastX + ", " + mLastY + ", " + mLastZ);
+//            Log.d(TAG, "Shake speed: " + speed);
         }
     }
 
-    private void checkSpeed(int id, long now) {
+    private void checkSpeed(float speed, long now) {
         if ((++mShakeCount >= SHAKE_COUNT)
                 && (now - mLastShake > SHAKE_DURATION)) {
             mLastShake = now;
             mShakeCount = 0;
             Log.d(TAG, "ShakeListener mShakeListener---->" + mShakeListener);
             if (mShakeListener != null) {
-                mShakeListener.onShake(id);
+                mShakeListener.onShake(speed);
             }
         }
         mLastForce = now;
     }
 
-    protected void playSound(int id) {
-        MediaPlayer mediaPlayer;
-        if (id > 0) {
-            mSoundPool.play(mLoadedShakerIds[0], 1, 1, 1, 0, 0 + 1);
-        } else {
-            mSoundPool.play(mLoadedShakerIds[1], 1, 1, 1, 0, 0 + 1);
+    protected void playSound(float speed) {
+//        if (id > 0) {
+        Log.d("SP", "ActivatedShake speed: " + speed);
+        float maxSpeed = 800.0f;
+        float volume = Math.min(1, 0.2f + (float) Math.pow((Math.min(speed, maxSpeed) / maxSpeed), 0.5f));
+        mSoundPool.play(mLoadedShakerIds[0], volume, volume, 1, 0, 1);
+//        } else {
+//            mSoundPool.play(mLoadedShakerIds[1], 1, 1, 1, 0, 0 + 1);
 //            mediaPlayer = MediaPlayer.create(this, R.raw.soft);
-        }
+//        }
 
 //        mediaPlayer.start();
 

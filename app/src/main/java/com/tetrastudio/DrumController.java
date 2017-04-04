@@ -81,6 +81,7 @@ public class DrumController extends ControllerBase {
         mOpenCvCameraView = cameraView;
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setAlpha(0);
+        mOpenCvCameraView.disableFpsMeter();
         mOpenCvCameraView.setCvCameraViewListener(new DrumCameraListener());
 
         mParentActivity = parentActivity;
@@ -169,7 +170,7 @@ public class DrumController extends ControllerBase {
 //        float[] accelerometerValues = new float[0];
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             mAccelerometerVal = MathUtils.lowPass(sensorEvent.values.clone(), mAccelerometerVal);
-            mDebugTextView.setText(String.format("X:%f\nY:%f\nZ:%f", sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]));
+//            mDebugTextView.setText(String.format("X:%f\nY:%f\nZ:%f", sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]));
         }
 
         long deltaTime = updateDeltaTime();

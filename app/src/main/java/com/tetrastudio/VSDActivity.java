@@ -139,7 +139,6 @@ public class VSDActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-//        mShaker.resume();
         resumeControllerSensors();
     }
 
@@ -192,18 +191,6 @@ public class VSDActivity extends AppCompatActivity {
 //            }
 //        });
 //    }
-
-    //ShakerSound
-    protected void playSound(int id) {
-        MediaPlayer mediaPlayer;
-        if (id > 0)
-            mediaPlayer = MediaPlayer.create(this, R.raw.hard);
-        else
-            mediaPlayer = MediaPlayer.create(this, R.raw.soft);
-
-        mediaPlayer.start();
-
-    }
 
     public void toPianoPage(View v) {
         startActivity(new Intent(VSDActivity.this, PianoActivity.class));

@@ -115,7 +115,7 @@ public class PianoController extends ControllerBase {
 	public void onSensorChanged(SensorEvent sensorEvent) {
 		if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			mAccelerometerVal = MathUtils.lowPass(sensorEvent.values.clone(), mAccelerometerVal);
-			mDebugTextView.setText(String.format("X:%f\nY:%f\nZ:%f", sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]));
+//			mDebugTextView.setText(String.format("X:%f\nY:%f\nZ:%f", sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]));
 		}
 
 		update(mAccelerometerVal);
@@ -124,7 +124,7 @@ public class PianoController extends ControllerBase {
 	// Update piano properties
 	public void update(float[] accelerometer) {
 		if (accelerometer[2] >= 9.0) {
-			mOctaveOffset = 3;
+			mOctaveOffset = 4;
 			updateKeyboardColours(R.color.pink2);
 		} else if (accelerometer[2] > 6.0 && accelerometer[2] < 9.0) {
 			mOctaveOffset = 2;
