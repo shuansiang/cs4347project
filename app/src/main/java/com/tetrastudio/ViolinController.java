@@ -2,6 +2,8 @@ package com.tetrastudio;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.media.AudioFormat;
@@ -10,7 +12,6 @@ import android.media.AudioTrack;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 
 import java.io.DataInputStream;
@@ -33,6 +34,7 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     private ArrayList<ImageButton> mViolinButtons;
     private ArrayList<View> mViolinGlows;
     private ArrayList<Float> mAccelHistory = new ArrayList<>();
+    private ArrayList<byte[]> mSoundList = new ArrayList<>();
     private Thread mAudioWriteThread, mAudioStopThread;
 
     private boolean mIsPlayingViolin, mViolinJustStarted, mViolinJustStopped;
@@ -60,10 +62,17 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     };
 
     private int[] mViolinSoundIds = {
-            R.raw.c_violin_loop
+            R.raw.c_violin_loop,
+            R.raw.d_violin_loop,
+            R.raw.e_violin_loop,
+            R.raw.f_violin_loop,
+            R.raw.g_violin_loop,
+            R.raw.a_violin_loop,
+            R.raw.b_violin_loop
     };
 
-    private int[] mLoadedViolinIds;
+    private int[] getmLoadedViolinIds;
+    private int[] mLoadedViolinSoundIds;
     private float mOctaveOffset = 0;
     private int mActiveViolinNote = 0;
 
@@ -80,226 +89,70 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
             mViolinGlows.add(parentActivity.findViewById(mViolinGlowIds[i]));
         }
 
-        InputStream is = context.getResources().openRawResource(R.raw.c_violin_loop);
-        try {
-            int fileLength = is.available();
-            DataInputStream dis = new DataInputStream(context.getResources().openRawResource(R.raw.c_violin_loop));
-            byte[] tempViolinCBuf = new byte[fileLength];
-            Log.d("SP", "VCB: " + fileLength);
-            dis.readFully(tempViolinCBuf);
-            mViolinCBuf = new byte[fileLength-44];
-            mViolinCBuf = Arrays.copyOfRange(tempViolinCBuf, 44, fileLength);
-        } catch (IOException e) {
-            e.printStackTrace();
+        mLoadedViolinSoundIds = new int[mViolinSoundIds.length];
+        for (int j = 0; j < mViolinSoundIds.length; j++) {
+            InputStream is = context.getResources().openRawResource(mViolinSoundIds[j]);
+
+            try {
+                int fileLength = is.available();
+                DataInputStream dis = new DataInputStream(context.getResources().openRawResource(mViolinSoundIds[j]));
+                byte[] tempViolinCBuf = new byte[fileLength];
+                Log.d("SP", "VCB: " + fileLength);
+                dis.readFully(tempViolinCBuf);
+                byte[] finalNoteBuffer = new byte[fileLength - 44];
+                finalNoteBuffer = Arrays.copyOfRange(tempViolinCBuf, 44, fileLength);
+                mSoundList.add(finalNoteBuffer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            int minBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+            mStreamingTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE,
+                    AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
+                    minBufferSize, AudioTrack.MODE_STREAM);
+
+            Log.d("SP", "MIN BUF SIZE: " + minBufferSize);
+
+            mAudioWriteRunnable = new AudioWriteRunnable(mSoundList, mStreamingTrack);
+            mAudioWriteThread = new Thread(mAudioWriteRunnable);
+
+            mAudioStopRunnable = new AudioStopRunnable(mStreamingTrack);
+            mAudioStopThread = new Thread(mAudioStopRunnable);
+
+            mStreamingTrack.play();
+            mAudioWriteThread.start();
+            mAudioStopThread.start();
         }
 
-        int minBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        mStreamingTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE,
-                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                minBufferSize, AudioTrack.MODE_STREAM);
-
-        Log.d("SP", "MIN BUF SIZE: " + minBufferSize);
-
-        mAudioWriteRunnable = new AudioWriteRunnable(mViolinCBuf, mStreamingTrack);
-        mAudioWriteThread = new Thread(mAudioWriteRunnable);
-
-        mAudioStopRunnable = new AudioStopRunnable(mStreamingTrack);
-        mAudioStopThread = new Thread(mAudioStopRunnable);
-
-        mStreamingTrack.play();
-        mAudioWriteThread.start();
-        mAudioStopThread.start();
-
-//        SoundPool soundPoll = new SoundPool(8, AudioManager.STREAM_MUSIC, 0);
-
-//        //public Context context;
-//        HashMap<Integer, Integer> soundPoolMap = new HashMap<Integer, Integer>();
+//        InputStream is = context.getResources().openRawResource(R.raw.c_violin_loop);
+//        try {
+//            int fileLength = is.available();
+//            DataInputStream dis = new DataInputStream(context.getResources().openRawResource(R.raw.c_violin_loop));
+//            byte[] tempViolinCBuf = new byte[fileLength];
+//            Log.d("SP", "VCB: " + fileLength);
+//            dis.readFully(tempViolinCBuf);
+//            mViolinCBuf = new byte[fileLength-44];
+//            mViolinCBuf = Arrays.copyOfRange(tempViolinCBuf, 44, fileLength);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 //
-//        final ViolinSoundPool violinSoundPool = new ViolinSoundPool(this, soundPoolMap, soundPoll);
+//        int minBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+//        mStreamingTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE,
+//                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
+//                minBufferSize, AudioTrack.MODE_STREAM);
 //
-//        violinSoundPool.SoundPoolLoadtest();
+//        Log.d("SP", "MIN BUF SIZE: " + minBufferSize);
 //
-//        imageButton_m1.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
+//        mAudioWriteRunnable = new AudioWriteRunnable(mViolinCBuf, mStreamingTrack);
+//        mAudioWriteThread = new Thread(mAudioWriteRunnable);
 //
+//        mAudioStopRunnable = new AudioStopRunnable(mStreamingTrack);
+//        mAudioStopThread = new Thread(mAudioStopRunnable);
 //
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    try {
-//                        violinSoundPool.play(violinSoundPool.soundPoolMap.get(1), 1, 1, 0, 0, 1);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    try {
-//                        violinSoundPool.pause(violinSoundPool.soundPoolMap.get(1));
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//
-//        imageButton_m2.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//                int i = 0;
-//
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    try {
-//                        i = violinSoundPool.play(violinSoundPool.soundPoolMap.get(2), 1, 1, 0, 0, 1);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    try {
-//                        violinSoundPool.stop(i);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//        imageButton_m3.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//                int i = 0;
-//
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    try {
-//                        i = violinSoundPool.play(violinSoundPool.soundPoolMap.get(3), 1, 1, 0, 0, 1);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    try {
-//                        violinSoundPool.stop(i);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//        imageButton_m4.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    try {
-//                        violinSoundPool.play(violinSoundPool.soundPoolMap.get(4), 1, 1, 0, 0, 1);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    try {
-//                        violinSoundPool.stop(violinSoundPool.soundPoolMap.get(4));
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//        imageButton_m5.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    try {
-//                        violinSoundPool.play(violinSoundPool.soundPoolMap.get(5), 1, 1, 0, 0, 1);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    try {
-//                        violinSoundPool.stop(violinSoundPool.soundPoolMap.get(5));
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//        imageButton_m6.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    try {
-//                        violinSoundPool.play(violinSoundPool.soundPoolMap.get(6), 1, 1, 0, 0, 1);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    try {
-//                        violinSoundPool.stop(violinSoundPool.soundPoolMap.get(6));
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//        imageButton_m7.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    try {
-//                        violinSoundPool.play(violinSoundPool.soundPoolMap.get(7), 1, 1, 0, 0, 1);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    try {
-//                        violinSoundPool.stop(violinSoundPool.soundPoolMap.get(7));
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
-//
-//        imageButton_m8.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//
-//                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-//                    try {
-//                        violinSoundPool.play(violinSoundPool.soundPoolMap.get(8), 1, 1, 0, 0, 1);
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-//                    try {
-//                        violinSoundPool.stop(violinSoundPool.soundPoolMap.get(8));
-//                    } catch (Exception e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
-//                return false;
-//            }
-//        });
+//        mStreamingTrack.play();
+//        mAudioWriteThread.start();
+//        mAudioStopThread.start();
     }
 
     private float getAverageLinearY() {
@@ -378,11 +231,14 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         boolean down = false;
-        Log.d("SP", v.getId()+" ontouch");
+        Log.d("SP", v.getId() + " ontouch");
+
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             down = true;
-        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-//            mAudioStopRunnable.checkStop(true);
+            for (int i = 0; i < mViolinButtons.size(); i++) {
+
+            }
+//            mAudioWriteRunnable.changedIdx()
         }
 
         for (int i = 0; i < mViolinButtonIds.length; i++) {
