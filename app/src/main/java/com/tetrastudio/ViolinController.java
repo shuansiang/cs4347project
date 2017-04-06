@@ -17,6 +17,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static com.tetrastudio.MathUtils.lowPass;
 
@@ -61,9 +62,11 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
         try {
             int fileLength = is.available();
             DataInputStream dis = new DataInputStream(context.getResources().openRawResource(R.raw.c_violin_loop));
-            mViolinCBuf = new byte[fileLength];
+            byte[] tempViolinCBuf = new byte[fileLength];
             Log.d("SP", "VCB: " + fileLength);
-            dis.readFully(mViolinCBuf);
+            dis.readFully(tempViolinCBuf);
+            mViolinCBuf = new byte[fileLength-44];
+            mViolinCBuf = Arrays.copyOfRange(tempViolinCBuf, 44, fileLength);
         } catch (IOException e) {
             e.printStackTrace();
         }
