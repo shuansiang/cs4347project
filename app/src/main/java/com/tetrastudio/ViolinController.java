@@ -31,7 +31,13 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     private AudioStopRunnable mAudioStopRunnable;
     private float[] mLinearAccel = new float[3];
     private ArrayList<ImageButton> mViolinButtons;
+    private ArrayList<View> mViolinGlows;
+    private ArrayList<Float> mAccelHistory = new ArrayList<>();
     private Thread mAudioWriteThread, mAudioStopThread;
+
+    private boolean mIsPlayingViolin, mViolinJustStarted, mViolinJustStopped;
+
+    protected final float LINEAR_ACCEL_THRESHOLD = 0.25f;
 
     private int[] mViolinButtonIds = {
             R.id.violin_c,
@@ -43,19 +49,35 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
             R.id.violin_b
     };
 
+    private int[] mViolinGlowIds = {
+            R.id.onepie_c_glow,
+            R.id.onepie_d_glow,
+            R.id.onepie_e_glow,
+            R.id.onepie_f_glow,
+            R.id.onepie_g_glow,
+            R.id.onepie_a_glow,
+            R.id.onepie_b_glow
+    };
+
     private int[] mViolinSoundIds = {
             R.raw.c_violin_loop
     };
 
     private int[] mLoadedViolinIds;
     private float mOctaveOffset = 0;
+    private int mActiveViolinNote = 0;
 
     public ViolinController(Context context, Activity parentActivity) {
         mViolinButtons = new ArrayList<>();
+        mViolinGlows = new ArrayList<>();
 
         for (int i = 0; i < mViolinButtonIds.length; i++) {
             mViolinButtons.add((ImageButton) parentActivity.findViewById(mViolinButtonIds[i]));
             mViolinButtons.get(i).setOnTouchListener(this);
+        }
+
+        for (int i = 0; i < mViolinGlowIds.length; i++) {
+            mViolinGlows.add(parentActivity.findViewById(mViolinGlowIds[i]));
         }
 
         InputStream is = context.getResources().openRawResource(R.raw.c_violin_loop);
@@ -280,11 +302,72 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 //        });
     }
 
+    private float getAverageLinearY() {
+        float sum = 0;
+        for (int i = 0; i < mAccelHistory.size(); i++) {
+            sum += (Math.max(0.1, (float) i / (mAccelHistory.size() - 1))) * Math.abs(mAccelHistory.get(i));
+        }
+        return sum / mAccelHistory.size();
+    }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             mLinearAccel = lowPass(event.values.clone(), mLinearAccel);
         }
+
+        long deltaTime = updateDeltaTime();
+        if (deltaTime < UPDATE_INTERVAL) {
+            return;
+        }
+        mPreviousUpdateTimestamp = System.currentTimeMillis();
+
+        update(deltaTime, mLinearAccel);
+    }
+
+    private void updateViolinView() {
+        for (int i = 0; i < mViolinButtons.size(); i++) {
+            if (i != mActiveViolinNote) {
+                mViolinGlows.get(i).setVisibility(View.INVISIBLE);
+            } else {
+                if (mIsEnabled) {
+                    mViolinGlows.get(i).setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    }
+
+    private void update(long deltaTimeMillis, float[] accelerometer) {
+//        checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
+        updateLinearAccelSound(deltaTimeMillis, accelerometer);
+        updateViolinView();
+    }
+
+    private void updateLinearAccelSound(long deltaTimeMillis, float[] currentOrientation) {
+//        float pitchR = (float) Math.toDegrees(currentOrientation[1]); // Rotational pitch (not the frequency pitch)
+//        float gain = 1 - ((pitchR + 50) / 140.0f) * 1;
+//        mStreamingTrack.setPlaybackRate((int)(gain * 44100));
+        mStreamingTrack.setVolume(1.0f);
+
+        if (mIsEnabled) {
+            mAccelHistory.add(mLinearAccel[1]);
+        } else if (mAccelHistory.size() > 0) {
+            mAccelHistory.clear();
+        }
+
+        if (mAccelHistory.size() < 8) {
+            return;
+        }
+        if (getAverageLinearY() >= LINEAR_ACCEL_THRESHOLD) {
+            mIsPlayingViolin = true;
+            mViolinJustStarted = true;
+        } else {
+            if (mIsPlayingViolin) {
+                mViolinJustStopped = true;
+            }
+            mIsPlayingViolin = false;
+        }
+        mAccelHistory = new ArrayList<Float>(mAccelHistory.subList(mAccelHistory.size() - 3, mAccelHistory.size()));
     }
 
     @Override
