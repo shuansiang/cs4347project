@@ -6,24 +6,20 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.android.CameraBridgeViewBase;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-
-import android.media.MediaPlayer;
-import android.widget.Toast;
 
 public class VSDActivity extends AppCompatActivity {
 
@@ -38,8 +34,9 @@ public class VSDActivity extends AppCompatActivity {
     private ArrayList<Pair<ControllerBase, Sensor>> mControllers;
 
     private DrumController mDrumController;
+    private ViolinController mViolinController;
     private SensorManager mSensorManager;
-    private Sensor mAccelSensor;
+    private Sensor mAccelSensor, mLinearAccelSensor;
     //Shaker
     private ShakeListener mShaker;
     private Toast mToast;
@@ -83,6 +80,7 @@ public class VSDActivity extends AppCompatActivity {
     private void initSensors() {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mLinearAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
     }
 
     private void initControllers() {
@@ -93,6 +91,10 @@ public class VSDActivity extends AppCompatActivity {
 
         mShaker = new ShakeListener(this, this);
         mShaker.setEnabled(true);
+
+        mViolinController = new ViolinController(this, this);
+        mViolinController.setEnabled(false);
+
 //        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener() {
 //            public void onShake(int id) {
 //                playSound(id);
@@ -112,6 +114,7 @@ public class VSDActivity extends AppCompatActivity {
 
         mControllers.add(new Pair<ControllerBase, Sensor>(mDrumController, mAccelSensor));
         mControllers.add(new Pair<ControllerBase, Sensor>(mShaker, mAccelSensor));
+        mControllers.add(new Pair<ControllerBase, Sensor>(mViolinController, mLinearAccelSensor));
     }
 
     private void resumeControllerSensors() {

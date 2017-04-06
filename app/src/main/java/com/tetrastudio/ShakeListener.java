@@ -50,7 +50,7 @@ public class ShakeListener extends ControllerBase {
 
     public ShakeListener(Context context, Activity parentActivity) {
 
-        Log.d(TAG, "ShakeListener invoked---->");
+//        Log.d(TAG, "ShakeListener invoked---->");
         mContext = context;
 
         mShakerGlowView = parentActivity.findViewById(R.id.shaker_button_glow);
@@ -87,7 +87,7 @@ public class ShakeListener extends ControllerBase {
     }
 
     public void setOnShakeListener(OnShakeListener listener) {
-        Log.d(TAG, "ShakeListener setOnShakeListener invoked---->");
+//        Log.d(TAG, "ShakeListener setOnShakeListener invoked---->");
         mShakeListener = listener;
     }
 
@@ -147,7 +147,7 @@ public class ShakeListener extends ControllerBase {
             mLastX = event.values[0];
             mLastY = event.values[1];
             mLastZ = event.values[2];
-            Log.d(TAG, "X,Y,Z Values: " + mLastX + ", " + mLastY + ", " + mLastZ);
+//            Log.d(TAG, "X,Y,Z Values: " + mLastX + ", " + mLastY + ", " + mLastZ);
 //            Log.d(TAG, "Shake speed: " + speed);
         }
     }
@@ -157,7 +157,7 @@ public class ShakeListener extends ControllerBase {
                 && (now - mLastShake > SHAKE_DURATION)) {
             mLastShake = now;
             mShakeCount = 0;
-            Log.d(TAG, "ShakeListener mShakeListener---->" + mShakeListener);
+//            Log.d(TAG, "ShakeListener mShakeListener---->" + mShakeListener);
             if (mShakeListener != null) {
                 mShakeListener.onShake(speed);
             }
@@ -167,7 +167,7 @@ public class ShakeListener extends ControllerBase {
 
     protected void playSound(float speed) {
 //        if (id > 0) {
-        Log.d("SP", "ActivatedShake speed: " + speed);
+//        Log.d("SP", "ActivatedShake speed: " + speed);
         float maxSpeed = 800.0f;
         float volume = Math.min(1, 0.2f + (float) Math.pow((Math.min(speed, maxSpeed) / maxSpeed), 0.5f));
         mSoundPool.play(mLoadedShakerIds[0], volume, volume, 1, 0, 1);
