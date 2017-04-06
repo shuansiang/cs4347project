@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 import static com.tetrastudio.MathUtils.lowPass;
 
-public class ViolinController extends ControllerBase implements View.OnTouchListener {
+public class ViolinController extends ControllerBase implements View.OnTouchListener, RadialView.OnSliceClickListener {
 
     private static final int SAMPLE_RATE = 44100;
     private byte[] mViolinCBuf;
@@ -32,8 +32,12 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     private float[] mLinearAccel = new float[3];
     private ArrayList<ImageButton> mViolinButtons;
     private ArrayList<View> mViolinGlows;
+    private RadialView mRadialView;
+
     private ArrayList<Float> mAccelHistory = new ArrayList<>();
+
     private Thread mAudioWriteThread, mAudioStopThread;
+
 
     private boolean mIsPlayingViolin, mViolinJustStarted, mViolinJustStopped;
 
@@ -73,12 +77,15 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 
         for (int i = 0; i < mViolinButtonIds.length; i++) {
             mViolinButtons.add((ImageButton) parentActivity.findViewById(mViolinButtonIds[i]));
-            mViolinButtons.get(i).setOnTouchListener(this);
+//            mViolinButtons.get(i).setOnTouchListener(this);
         }
 
         for (int i = 0; i < mViolinGlowIds.length; i++) {
             mViolinGlows.add(parentActivity.findViewById(mViolinGlowIds[i]));
         }
+
+        mRadialView = (RadialView) parentActivity.findViewById(R.id.radial_view);
+        mRadialView.setOnSliceClickListener(this);
 
         InputStream is = context.getResources().openRawResource(R.raw.c_violin_loop);
         try {
@@ -395,5 +402,15 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
         }
 
         return down;
+    }
+
+    @Override
+    public void onSlickClickDown(int slicePosition) {
+        Log.d("SP", "SLICE POSITION down: "+slicePosition);
+    }
+
+    @Override
+    public void onSlickClickUp(int slicePosition) {
+        Log.d("SP", "SLICE POSITION up: "+slicePosition);
     }
 }
