@@ -29,6 +29,7 @@ public class VSDActivity extends AppCompatActivity {
     private CameraBridgeViewBase mOpenCvCameraView;
     private TextView mDebugGrav;
     private View mDrumLayout;
+    private View mViolinLayout;
 
     // Controllers
     private ArrayList<Pair<ControllerBase, Sensor>> mControllers;
@@ -67,10 +68,31 @@ public class VSDActivity extends AppCompatActivity {
                     Log.d("SP", "ACTION UP");
                     mDrumController.setEnabled(false);
                     mShaker.setEnabled(true);
+                    mViolinController.setEnabled(false);
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                     Log.d("SP", "ACTION DOWN");
                     mDrumController.setEnabled(true);
                     mShaker.setEnabled(false);
+                    mViolinController.setEnabled(false);
+                }
+                return false;
+            }
+        });
+
+        mViolinLayout = findViewById(R.id.radial_view);
+        mViolinLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                    Log.d("SP", "Violin UP");
+                    mDrumController.setEnabled(false);
+                    mShaker.setEnabled(true);
+                    mViolinController.setEnabled(false);
+                } else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                    Log.d("SP", "Violin DOWN");
+                    mDrumController.setEnabled(false);
+                    mShaker.setEnabled(false);
+                    mViolinController.setEnabled(true);
                 }
                 return false;
             }
@@ -94,23 +116,6 @@ public class VSDActivity extends AppCompatActivity {
 
         mViolinController = new ViolinController(this, this);
         mViolinController.setEnabled(false);
-
-//        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener() {
-//            public void onShake(int id) {
-//                playSound(id);
-//                if (mToast != null) {
-//                    mToast.cancel();
-//                }
-//                if (id > 0) {
-//                    mToast = Toast.makeText(VSDActivity.this, "Hard Shake", Toast.LENGTH_SHORT);
-//                    mToast.show();
-//                } else {
-//                    mToast = Toast.makeText(VSDActivity.this, "Soft Shake", Toast.LENGTH_SHORT);
-//                    mToast.show();
-//                }
-//            }
-//        });
-//        shakerControl();
 
         mControllers.add(new Pair<ControllerBase, Sensor>(mDrumController, mAccelSensor));
         mControllers.add(new Pair<ControllerBase, Sensor>(mShaker, mAccelSensor));
@@ -175,25 +180,6 @@ public class VSDActivity extends AppCompatActivity {
     public TextView getDebugGrav() {
         return mDebugGrav;
     }
-
-//    private void shakerControl() {
-//        mShaker = new ShakeListener(this);
-//        mShaker.setOnShakeListener(new ShakeListener.OnShakeListener() {
-//            public void onShake(int id) {
-//                playSound(id);
-//                if (mToast != null) {
-//                    mToast.cancel();
-//                }
-//                if (id > 0) {
-//                    mToast = Toast.makeText(VSDActivity.this, "Hard Shake", Toast.LENGTH_SHORT);
-//                    mToast.show();
-//                } else {
-//                    mToast = Toast.makeText(VSDActivity.this, "Soft Shake", Toast.LENGTH_SHORT);
-//                    mToast.show();
-//                }
-//            }
-//        });
-//    }
 
     public void toPianoPage(View v) {
         startActivity(new Intent(VSDActivity.this, PianoActivity.class));

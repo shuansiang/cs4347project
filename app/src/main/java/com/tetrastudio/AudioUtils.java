@@ -7,15 +7,15 @@ import java.util.ArrayList;
 
 class AudioWriteRunnable implements Runnable {
     private static final int SAMPLE_RATE = 44100;
-    private ArrayList<byte[]> buf = new ArrayList<>();
-    private int soundIdx;
+    private ArrayList<byte[]> bufferList = new ArrayList<>();
+    private int mCurrentSoundId;
     private boolean mViolinEnabled = false;
     private boolean mIsPlayingViolin = false;
     private long mLastCallTime = -1;
     private AudioTrack mStreamingTrack = null;
 
-    public AudioWriteRunnable(ArrayList<byte[]> buf, AudioTrack mStreamingTrack) {
-        this.buf = buf;
+    public AudioWriteRunnable(ArrayList<byte[]> bufferList, AudioTrack mStreamingTrack) {
+        this.bufferList = bufferList;
         this.mStreamingTrack = mStreamingTrack;
     }
 
@@ -40,16 +40,15 @@ class AudioWriteRunnable implements Runnable {
 
     }
 
-    public boolean checkEnabled(boolean isEnabled) {
+    public boolean setEnabled(boolean isEnabled) {
         mViolinEnabled = isEnabled;
 
         return mViolinEnabled;
     }
 
-    public int changedIdx(int idx) {
-        soundIdx = idx;
-
-        return soundIdx;
+    public int setPlayingNote(int idx) {
+        mCurrentSoundId = idx;
+        return mCurrentSoundId;
     }
 
     public void run() {
@@ -58,7 +57,7 @@ class AudioWriteRunnable implements Runnable {
         while (mUseAudioTrack) {
             long currentTime = System.currentTimeMillis();
 
-            if (mViolinEnabled) {
+            if (mViolinEnabled && mCurrentSoundId >= 0) {
                 if (mLastCallTime < 0) {
                     mLastCallTime = System.currentTimeMillis();
                 }
@@ -72,7 +71,7 @@ class AudioWriteRunnable implements Runnable {
 //                    if (duration * SAMPLE_RATE <= 0) {
 //                        duration = 1.0f / SAMPLE_RATE;
 //                    }
-                byte[] buffer = this.buf.get(soundIdx); //getSoundBuffer(mFrequency, duration, FadeType.NONE);
+                byte[] buffer = this.bufferList.get(mCurrentSoundId); //getSoundBuffer(mFrequency, duration, FadeType.NONE);
 
 //                    byte[] buffer = getViolinBuffer(mFrequency, duration, mLastViolinBufIndex, FadeType.NONE);
                 Log.d("SP", "Freq: " + mFrequency);
@@ -93,17 +92,17 @@ class AudioWriteRunnable implements Runnable {
 
 class AudioStopRunnable implements Runnable {
     private boolean mViolinJustStopped = false;
-    private boolean mIsPlayingViolin = false;
+    private boolean mIsNotPlayingViolin = false;
     private AudioTrack mStreamingTrack = null;
 
     public AudioStopRunnable(AudioTrack mStreamingTrack) {
         this.mStreamingTrack = mStreamingTrack;
     }
 
-    public boolean checkStop(boolean isStop) {
-        mIsPlayingViolin = isStop;
+    public boolean setStop(boolean isStop) {
+        mIsNotPlayingViolin = isStop;
 
-        return mIsPlayingViolin;
+        return mIsNotPlayingViolin;
     }
 
     public boolean setJustStop(boolean isStop) {
@@ -116,27 +115,26 @@ class AudioStopRunnable implements Runnable {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         boolean mUseAudioTrack = true;
         while (mUseAudioTrack) {
-//            mIsPlayingViolin = false;
-            if (mIsPlayingViolin) {
-                if (mViolinJustStopped) {
-                    int playPos = mStreamingTrack.getPlaybackHeadPosition();
-                    Log.d("SP", "MVJS: Just stopped " + playPos);
-                    mStreamingTrack.pause();
-                    Log.d("SP", "MVJS: Flush " + playPos);
-                    mStreamingTrack.flush();
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    mStreamingTrack.play();
+//            mIsNotPlayingViolin = false;
+            if (mIsNotPlayingViolin) {
+                int playPos = mStreamingTrack.getPlaybackHeadPosition();
+                Log.d("SP", "MVJS: Just stopped " + playPos);
+                mStreamingTrack.pause();
+                Log.d("SP", "MVJS: Flush " + playPos);
+                mStreamingTrack.flush();
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                mStreamingTrack.play();
 //                        float period = 1.0f / mFrequency;
 //                        float duration = (float) (period * Math.ceil(0.25f / period));
 //                        byte[] buffer = getViolinBuffer(0, 0.5f, FadeType.FADE_OUT, playPos);
 //                        byte[] buffer = getSoundBuffer(0, 0.5f, FadeType.FADE_OUT);
 //                        mStreamingTrack.write(buffer, 0, buffer.length);
-                    mViolinJustStopped = false;
-                }
+                mViolinJustStopped = false;
+                mIsNotPlayingViolin = false;
             }
         }
     }

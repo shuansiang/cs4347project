@@ -2,8 +2,6 @@ package com.tetrastudio;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.media.AudioFormat;
@@ -42,7 +40,7 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 
     private boolean mIsPlayingViolin, mViolinJustStarted, mViolinJustStopped;
 
-    protected final float LINEAR_ACCEL_THRESHOLD = 0.25f;
+    protected final float LINEAR_ACCEL_THRESHOLD = 0.15f;
 
     private int[] mViolinButtonIds = {
             R.id.violin_c,
@@ -206,6 +204,7 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
         mStreamingTrack.setVolume(1.0f);
 
         if (mIsEnabled) {
+            Log.d("SP", "ACCEL: "+mLinearAccel[1]);
             mAccelHistory.add(mLinearAccel[1]);
         } else if (mAccelHistory.size() > 0) {
             mAccelHistory.clear();
@@ -214,14 +213,22 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
         if (mAccelHistory.size() < 8) {
             return;
         }
-        if (getAverageLinearY() >= LINEAR_ACCEL_THRESHOLD) {
+//        if (getAverageLinearY() >= LINEAR_ACCEL_THRESHOLD) {
+        if (Math.abs(mLinearAccel[1]) >= LINEAR_ACCEL_THRESHOLD) {
+            // Moving
             mIsPlayingViolin = true;
+            mAudioWriteRunnable.setEnabled(mIsPlayingViolin);
+            mAudioStopRunnable.setStop(false);
+            mAudioStopRunnable.setJustStop(false);
             mViolinJustStarted = true;
         } else {
             if (mIsPlayingViolin) {
-                mViolinJustStopped = true;
+//                mViolinJustStopped = true;
+                mAudioStopRunnable.setJustStop(mViolinJustStopped);
+                mAudioStopRunnable.setStop(true);
             }
             mIsPlayingViolin = false;
+            mAudioWriteRunnable.setEnabled(mIsPlayingViolin);
         }
         mAccelHistory = new ArrayList<Float>(mAccelHistory.subList(mAccelHistory.size() - 3, mAccelHistory.size()));
     }
@@ -233,36 +240,57 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        boolean down = false;
-        Log.d("SP", v.getId() + " ontouch");
-
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            down = true;
-            for (int i = 0; i < mViolinButtons.size(); i++) {
-
-            }
-//            mAudioWriteRunnable.changedIdx()
-        }
-
-        for (int i = 0; i < mViolinButtonIds.length; i++) {
-            if (v == mViolinButtons.get(i)) {
-                mAudioWriteRunnable.checkEnabled(down);
-                mAudioStopRunnable.checkStop(!down);
-                mAudioStopRunnable.setJustStop(!down);
-                return down;
-            }
-        }
-
-        return down;
+//        boolean down = false;
+//        Log.d("SP", v.getId() + " ontouch");
+//
+//        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//            down = true;
+//            for (int i = 0; i < mViolinButtons.size(); i++) {
+//
+//            }
+//        }
+//
+//        for (int i = 0; i < mViolinButtonIds.length; i++) {
+//            if (v == mViolinButtons.get(i)) {
+//                mAudioWriteRunnable.setEnabled(down);
+//                mAudioStopRunnable.setStop(!down);
+//                mAudioStopRunnable.setJustStop(!down);
+//                return down;
+//            }
+//        }
+//
+//        return down;
+        return true;
     }
 
     @Override
     public void onSlickClickDown(int slicePosition) {
         Log.d("SP", "SLICE POSITION down: "+slicePosition);
+        mActiveViolinNote = (slicePosition + 4) % 7;
+        mAudioWriteRunnable.setPlayingNote(mActiveViolinNote);
+
+    }
+
+    @Override
+    public void onSlickClickMove(int slicePosition) {
+        Log.d("SP", "SLICE POSITION move: "+slicePosition);
+        int newNote = (slicePosition + 4) % 7;
+        if (newNote != mActiveViolinNote) {
+            mActiveViolinNote = newNote;
+            mAudioStopRunnable.setStop(true);
+//            mAudioStopRunnable.setJustStop(true);
+            mAudioWriteRunnable.setPlayingNote(mActiveViolinNote);
+        } else {
+            return;
+        }
     }
 
     @Override
     public void onSlickClickUp(int slicePosition) {
         Log.d("SP", "SLICE POSITION up: "+slicePosition);
+        mActiveViolinNote = -1;
+        mAudioWriteRunnable.setPlayingNote(mActiveViolinNote);
+        mAudioStopRunnable.setStop(true);
+        mAudioStopRunnable.setJustStop(true);
     }
 }

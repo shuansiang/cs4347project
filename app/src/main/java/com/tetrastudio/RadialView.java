@@ -56,6 +56,8 @@ public class RadialView extends View {
     public interface OnSliceClickListener {
         void onSlickClickDown(int slicePosition);
 
+        void onSlickClickMove(int slicePosition);
+
         void onSlickClickUp(int slicePosition);
     }
 
@@ -134,6 +136,8 @@ public class RadialView extends View {
             mCurrentSliceIndex = sliceIndex;
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 mOnSliceClickListener.onSlickClickDown((int) sliceIndex);
+            } else if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+                mOnSliceClickListener.onSlickClickMove((int) sliceIndex);
             } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                 mOnSliceClickListener.onSlickClickUp((int) sliceIndex);
             }
