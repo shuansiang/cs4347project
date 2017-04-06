@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void start(View v) {
-        Log.d("TSTUDIO","HI");
         startActivity(new Intent(MainActivity.this, VSDActivity.class));
 
     }

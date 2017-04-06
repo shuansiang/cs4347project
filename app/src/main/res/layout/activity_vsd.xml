@@ -315,6 +315,16 @@
                             app:srcCompat="@drawable/onepie"/>
 
                         <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            opencv:srcCompat="@drawable/onepie_c_glow"
+                            android:rotation="-0.1"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:clickable="false"
+                            android:id="@+id/onepie_c_glow" />
+
+                        <ImageButton
                             android:id="@+id/violin_d"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -323,6 +333,18 @@
                             android:scaleType="fitCenter"
                             android:tint="#ffd9a0"
                             app:srcCompat="@drawable/onepie"/>
+
+
+                        <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            opencv:srcCompat="@drawable/onepie_d_glow"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:clickable="false"
+                            android:rotation="51.4"
+                            android:scaleType="fitCenter"
+                            android:id="@+id/onepie_d_glow" />
 
                         <ImageButton
                             android:id="@+id/violin_e"
@@ -335,6 +357,17 @@
                             app:srcCompat="@drawable/onepie"/>
 
                         <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            opencv:srcCompat="@drawable/onepie_e_glow"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:clickable="false"
+                            android:rotation="102.8"
+                            android:scaleType="fitCenter"
+                            android:id="@+id/onepie_e_glow" />
+
+                        <ImageButton
                             android:id="@+id/violin_f"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -343,6 +376,17 @@
                             android:scaleType="fitCenter"
                             android:tint="#b68800"
                             app:srcCompat="@drawable/onepie"/>
+
+                        <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            opencv:srcCompat="@drawable/onepie_f_glow"
+                            android:rotation="154.2"
+                            android:scaleType="fitCenter"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:clickable="false"
+                            android:id="@+id/onepie_f_glow" />
 
                         <ImageButton
                             android:id="@+id/violin_g"
@@ -355,6 +399,17 @@
                             app:srcCompat="@drawable/onepie"/>
 
                         <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            opencv:srcCompat="@drawable/onepie_g_glow"
+                            android:rotation="205.6"
+                            android:scaleType="fitCenter"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:clickable="false"
+                            android:id="@+id/onepie_g_glow" />
+
+                        <ImageButton
                             android:id="@+id/violin_a"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -365,6 +420,17 @@
                             app:srcCompat="@drawable/onepie"/>
 
                         <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            opencv:srcCompat="@drawable/onepie_a_glow"
+                            android:rotation="257"
+                            android:scaleType="fitCenter"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:clickable="false"
+                            android:id="@+id/onepie_a_glow" />
+
+                        <ImageButton
                             android:id="@+id/violin_b"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -373,6 +439,17 @@
                             android:scaleType="fitCenter"
                             android:tint="#ffc000"
                             app:srcCompat="@drawable/onepie"/>
+
+                        <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            opencv:srcCompat="@drawable/onepie_b_glow"
+                            android:rotation="308.4"
+                            android:scaleType="fitCenter"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:clickable="false"
+                            android:id="@+id/imageButton9" />
 
 
                     </RelativeLayout>
