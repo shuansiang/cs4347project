@@ -3,15 +3,18 @@ package com.tetrastudio;
 import android.media.AudioTrack;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 class AudioWriteRunnable implements Runnable {
     private static final int SAMPLE_RATE = 44100;
-    private byte[] buf;
+    private ArrayList<byte[]> buf = new ArrayList<>();
+    private int soundIdx;
     private boolean mViolinEnabled = false;
     private boolean mIsPlayingViolin = false;
     private long mLastCallTime = -1;
     private AudioTrack mStreamingTrack = null;
 
-    public AudioWriteRunnable(byte[] buf, AudioTrack mStreamingTrack) {
+    public AudioWriteRunnable(ArrayList<byte[]> buf, AudioTrack mStreamingTrack) {
         this.buf = buf;
         this.mStreamingTrack = mStreamingTrack;
     }
@@ -43,6 +46,12 @@ class AudioWriteRunnable implements Runnable {
         return mViolinEnabled;
     }
 
+    public int changedIdx(int idx) {
+        soundIdx = idx;
+
+        return soundIdx;
+    }
+
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         boolean mUseAudioTrack = true;
@@ -63,7 +72,7 @@ class AudioWriteRunnable implements Runnable {
 //                    if (duration * SAMPLE_RATE <= 0) {
 //                        duration = 1.0f / SAMPLE_RATE;
 //                    }
-                byte[] buffer = this.buf; //getSoundBuffer(mFrequency, duration, FadeType.NONE);
+                byte[] buffer = this.buf.get(soundIdx); //getSoundBuffer(mFrequency, duration, FadeType.NONE);
 
 //                    byte[] buffer = getViolinBuffer(mFrequency, duration, mLastViolinBufIndex, FadeType.NONE);
                 Log.d("SP", "Freq: " + mFrequency);
