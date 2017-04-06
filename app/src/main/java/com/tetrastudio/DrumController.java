@@ -71,6 +71,7 @@ public class DrumController extends ControllerBase {
             new Scalar(175.71397135416666, 113.93810004340278, 157.77175455729167), // Pink
             new Scalar(148.47259114583332, 144.60708658854168, 144.38650390625), // Beige
             new Scalar(58, 58, 58), // Black
+//            new Scalar(187.71437391493055, 127.57423936631945, 148.7959201388889), // Purple
     };
 
     private int[] mLoadedDrumIds;
@@ -125,6 +126,9 @@ public class DrumController extends ControllerBase {
 
     public void playSoundPress(View v, float volume) {
         Log.d("SP", "PLAYING SOUND: " + 0);
+        if (mActiveDrum >= 1 && mActiveDrum <= 3) {
+            volume = 1.0f;
+        }
         mSoundPool.play(mLoadedDrumIds[mActiveDrum], volume, volume, 1, 0, 0 + 1);
     }
 
@@ -275,6 +279,7 @@ public class DrumController extends ControllerBase {
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
             if (!mIsSwingingDown) {
+//                inputFrame.rgba().rowRange()
                 Scalar mean = Core.mean(inputFrame.rgba());
                 int closestColourIndex = getClosestColour(mean);
 //                Log.d("SP", "Mean: " + mean.val[0] + ", " + mean.val[1] + ", " + mean.val[2]);
