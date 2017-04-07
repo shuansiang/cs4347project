@@ -18,7 +18,6 @@ public class PianoActivity extends AppCompatActivity {
     private Sensor mAccelSensor;
 
 	// Views
-	private TextView mDebugGrav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +30,6 @@ public class PianoActivity extends AppCompatActivity {
     }
 
 	private void initViews() {
-		mDebugGrav = (TextView) findViewById(R.id.debugGrav);
 	}
 
     private void initSensors() {
@@ -67,7 +65,4 @@ public class PianoActivity extends AppCompatActivity {
         startActivity(new Intent(PianoActivity.this, VSDActivity.class));
     }
 
-	public TextView getDebugGrav() {
-		return mDebugGrav;
-	}
 }

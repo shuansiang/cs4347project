@@ -180,7 +180,7 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
             mLinearAccel[0] = event.values[0] - mGravity[0];
             mLinearAccel[1] = event.values[1] - mGravity[1];
             mLinearAccel[2] = event.values[2] - mGravity[2];
-            Log.d("SP", "LinearAccel: " + mLinearAccel[0]+", " + mLinearAccel[1]+", " + mLinearAccel[2]);
+//            Log.d("SP", "LinearAccel: " + event.values[0]+", " + event.values[1]+", " + event.values[2]);
 //            mLinearAccel = lowPass(event.values.clone(), mLinearAccel);
         }
 
@@ -190,7 +190,7 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
         }
         mPreviousUpdateTimestamp = System.currentTimeMillis();
 
-        update(deltaTime, mLinearAccel);
+        update(deltaTime, mLinearAccel, event.values);
     }
 
     private void updateViolinView() {
@@ -205,20 +205,22 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
         }
     }
 
-    private void update(long deltaTimeMillis, float[] accelerometer) {
+    private void update(long deltaTimeMillis, float[] linAccelerometer, float[] accelerometer) {
 //        checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
-        updateLinearAccelSound(deltaTimeMillis, accelerometer);
+        updateLinearAccelSound(deltaTimeMillis, linAccelerometer, accelerometer);
         updateViolinView();
     }
 
-    private void updateLinearAccelSound(long deltaTimeMillis, float[] currentOrientation) {
-//        float pitchR = (float) Math.toDegrees(currentOrientation[1]); // Rotational pitch (not the frequency pitch)
-//        float gain = 1 - ((pitchR + 50) / 140.0f) * 1;
+    private long mStartTime = 0;
+    private static long STOP_TIME_THRESHOLD = 200;
+    private void updateLinearAccelSound(long deltaTimeMillis, float[] currentOrientation, float[] currentAccel) {
+        float pitchR = (float) (currentAccel[0] + 3)/14.0f; // Rotational pitch (not the frequency pitch)
+        float gain = Math.max(0, Math.min(1.2f, 1 - (pitchR)));
 //        mStreamingTrack.setPlaybackRate((int)(gain * 44100));
-        mStreamingTrack.setVolume(1.0f);
+        mStreamingTrack.setVolume(gain);
 
         if (mIsEnabled) {
-            Log.d("SP", "ACCEL: "+mLinearAccel[1]);
+//            Log.d("SP", "ACCEL: "+mLinearAccel[1]);
             mAccelHistory.add(mLinearAccel[1]);
         } else if (mAccelHistory.size() > 0) {
             mAccelHistory.clear();
@@ -227,22 +229,28 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
         if (mAccelHistory.size() < 8) {
             return;
         }
-//        if (getAverageLinearY() >= LINEAR_ACCEL_THRESHOLD) {
-        if (Math.abs(mLinearAccel[1]) >= LINEAR_ACCEL_THRESHOLD) {
+        if (getAverageLinearY() >= LINEAR_ACCEL_THRESHOLD ) {
+//        if (Math.abs(mLinearAccel[1]) >= LINEAR_ACCEL_THRESHOLD) {
             // Moving
+            if (!mIsPlayingViolin) {
+                mStartTime = System.currentTimeMillis();
+            }
             mIsPlayingViolin = true;
             mAudioWriteRunnable.setEnabled(mIsPlayingViolin);
             mAudioStopRunnable.setStop(false);
             mAudioStopRunnable.setJustStop(false);
             mViolinJustStarted = true;
         } else {
-            if (mIsPlayingViolin) {
+            if (mIsPlayingViolin && System.currentTimeMillis()-mStartTime >= STOP_TIME_THRESHOLD) {
 //                mViolinJustStopped = true;
                 mAudioStopRunnable.setJustStop(mViolinJustStopped);
+                Log.d("SP", "STOPPING VIOLIN");
                 mAudioStopRunnable.setStop(true);
+                mIsPlayingViolin = false;
+                mAudioWriteRunnable.setEnabled(mIsPlayingViolin);
+            } else if (mIsPlayingViolin && System.currentTimeMillis()-mStartTime < STOP_TIME_THRESHOLD) {
+                Log.d("SP", "LESS THAN THRESH");
             }
-            mIsPlayingViolin = false;
-            mAudioWriteRunnable.setEnabled(mIsPlayingViolin);
         }
         mAccelHistory = new ArrayList<Float>(mAccelHistory.subList(mAccelHistory.size() - 3, mAccelHistory.size()));
     }

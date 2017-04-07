@@ -211,13 +211,6 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/debugGrav"
-            android:layout_height="80dp"
-            android:layout_weight="0.55"
-            android:enabled="false"
-            android:text="TextView"
-            android:layout_width="match_parent" />
     </FrameLayout>
 
 </RelativeLayout>

@@ -62,13 +62,13 @@ public class PianoController extends ControllerBase {
 	private float[] mAccelerometerVal = new float[4];
 
 	// Test views
-	private TextView mDebugTextView;
+//	private TextView mDebugTextView;
 
 	// Public constructor
 	public PianoController(Context context, Activity parentActivity) {
 		mContext = context;
 		mParentActivity = parentActivity;
-		mDebugTextView = ((PianoActivity) mParentActivity).getDebugGrav();
+//		mDebugTextView = ((PianoActivity) mParentActivity).getDebugGrav();
 
 		loadPianoSounds();
 		loadPianoButtons();
