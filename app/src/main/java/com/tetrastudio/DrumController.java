@@ -242,7 +242,8 @@ public class DrumController extends ControllerBase {
         } else {
             mIsSwingingDown = false;
         }
-        if (mAccelHistory.get(mAccelHistory.size() - 1)[1] < 2 && maxSwing > 2) {
+//        if (mAccelHistory.get(mAccelHistory.size() - 1)[1] < 2 && maxSwing > 2) {
+        if (currentAccelerometer[1] <= 2 && maxSwing > 2) {
             // End of hit
             float volume = Math.max(Math.min(1.0f, (maxSwing - 2) / 7.0f), 0.0f);
             Log.d("TTS", "HIT! " + volume);

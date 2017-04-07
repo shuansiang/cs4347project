@@ -72,6 +72,7 @@ class AudioWriteRunnable implements Runnable {
 //                        duration = 1.0f / SAMPLE_RATE;
 //                    }
                 if (mCurrentSoundId >= 0) {
+
                     byte[] buffer = this.bufferList.get(mCurrentSoundId); //getSoundBuffer(mFrequency, duration, FadeType.NONE);
 
 //                    byte[] buffer = getViolinBuffer(mFrequency, duration, mLastViolinBufIndex, FadeType.NONE);

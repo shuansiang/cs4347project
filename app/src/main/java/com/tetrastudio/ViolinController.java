@@ -105,6 +105,7 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
                 dis.readFully(tempViolinCBuf);
                 byte[] finalNoteBuffer = new byte[fileLength - 44];
                 finalNoteBuffer = Arrays.copyOfRange(tempViolinCBuf, 44, fileLength);
+
                 mSoundList.add(finalNoteBuffer);
             } catch (IOException e) {
                 e.printStackTrace();

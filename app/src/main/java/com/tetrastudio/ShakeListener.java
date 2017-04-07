@@ -68,10 +68,6 @@ public class ShakeListener extends ControllerBase {
                 if (mIsEnabled) {
                     playSound(speed);
                 }
-//                if (mToast != null) {
-//                    mToast.cancel();
-//                }
-
             }
         });
     }
@@ -136,7 +132,7 @@ public class ShakeListener extends ControllerBase {
                     //+ event.values[1]
                     //+ event.values[2] - mLastX - mLastY
                     //- mLastZ)
-            -mLastX)
+                    - mLastX)
                     / diff * 10000;
             if (speed >= FORCE_THRESHOLD_HARD) {
                 checkSpeed(speed, now);
@@ -167,9 +163,9 @@ public class ShakeListener extends ControllerBase {
 
     protected void playSound(float speed) {
 //        if (id > 0) {
-//        Log.d("SP", "ActivatedShake speed: " + speed);
-        float maxSpeed = 800.0f;
-        float volume = Math.min(1, 0.2f + (float) Math.pow((Math.min(speed, maxSpeed) / maxSpeed), 0.5f));
+        Log.d("SP", "ActivatedShake speed: " + speed);
+        float maxSpeed = 1800.0f;
+        float volume = Math.min(1, 0.1f + (float) Math.pow((Math.min(speed, maxSpeed) / maxSpeed), 1.5f));
         mSoundPool.play(mLoadedShakerIds[0], volume, volume, 1, 0, 1);
 //        } else {
 //            mSoundPool.play(mLoadedShakerIds[1], 1, 1, 1, 0, 0 + 1);
