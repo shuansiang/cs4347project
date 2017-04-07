@@ -102,7 +102,8 @@ public class VSDActivity extends AppCompatActivity {
     private void initSensors() {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mLinearAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        mLinearAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        Log.d("SP", "INIT SENSOR: LIN ACCEL: "+mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION));
     }
 
     private void initControllers() {

@@ -28,7 +28,10 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     private AudioTrack mStreamingTrack = null;
     private AudioWriteRunnable mAudioWriteRunnable;
     private AudioStopRunnable mAudioStopRunnable;
+
     private float[] mLinearAccel = new float[3];
+    private float[] mGravity = new float[3];
+
     private ArrayList<ImageButton> mViolinButtons;
     private ArrayList<View> mViolinGlows;
     private RadialView mRadialView;
@@ -166,8 +169,18 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            mLinearAccel = lowPass(event.values.clone(), mLinearAccel);
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            final float alpha = 0.8f;
+
+            mGravity[0] = alpha * mGravity[0] + (1 - alpha) * event.values[0];
+            mGravity[1] = alpha * mGravity[1] + (1 - alpha) * event.values[1];
+            mGravity[2] = alpha * mGravity[2] + (1 - alpha) * event.values[2];
+
+            mLinearAccel[0] = event.values[0] - mGravity[0];
+            mLinearAccel[1] = event.values[1] - mGravity[1];
+            mLinearAccel[2] = event.values[2] - mGravity[2];
+            Log.d("SP", "LinearAccel: " + mLinearAccel[0]+", " + mLinearAccel[1]+", " + mLinearAccel[2]);
+//            mLinearAccel = lowPass(event.values.clone(), mLinearAccel);
         }
 
         long deltaTime = updateDeltaTime();
@@ -267,6 +280,7 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     public void onSlickClickDown(int slicePosition) {
         Log.d("SP", "SLICE POSITION down: "+slicePosition);
         mActiveViolinNote = (slicePosition + 4) % 7;
+        Log.d("SP", "Playing note down: "+mActiveViolinNote);
         mAudioWriteRunnable.setPlayingNote(mActiveViolinNote);
 
     }
