@@ -71,11 +71,13 @@ class AudioWriteRunnable implements Runnable {
 //                    if (duration * SAMPLE_RATE <= 0) {
 //                        duration = 1.0f / SAMPLE_RATE;
 //                    }
-                byte[] buffer = this.bufferList.get(mCurrentSoundId); //getSoundBuffer(mFrequency, duration, FadeType.NONE);
+                if (mCurrentSoundId >= 0) {
+                    byte[] buffer = this.bufferList.get(mCurrentSoundId); //getSoundBuffer(mFrequency, duration, FadeType.NONE);
 
 //                    byte[] buffer = getViolinBuffer(mFrequency, duration, mLastViolinBufIndex, FadeType.NONE);
-                Log.d("SP", "Freq: " + mFrequency);
-                mStreamingTrack.write(buffer, 0, buffer.length);
+                    Log.d("SP", "Freq: " + mFrequency);
+                    mStreamingTrack.write(buffer, 0, buffer.length);
+                }
             } else {
                 // Stopping is handled in the AudioStopRunnable since write will block this thread
             }
