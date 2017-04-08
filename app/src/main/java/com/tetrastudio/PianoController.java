@@ -2,7 +2,6 @@ package com.tetrastudio;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.media.AudioManager;
@@ -10,7 +9,6 @@ import android.media.SoundPool;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -61,14 +59,10 @@ public class PianoController extends ControllerBase {
 
 	private float[] mAccelerometerVal = new float[4];
 
-	// Test views
-//	private TextView mDebugTextView;
-
 	// Public constructor
 	public PianoController(Context context, Activity parentActivity) {
 		mContext = context;
 		mParentActivity = parentActivity;
-//		mDebugTextView = ((PianoActivity) mParentActivity).getDebugGrav();
 
 		loadPianoSounds();
 		loadPianoButtons();
@@ -115,7 +109,6 @@ public class PianoController extends ControllerBase {
 	public void onSensorChanged(SensorEvent sensorEvent) {
 		if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			mAccelerometerVal = MathUtils.lowPass(sensorEvent.values.clone(), mAccelerometerVal);
-//			mDebugTextView.setText(String.format("X:%f\nY:%f\nZ:%f", sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]));
 		}
 
 		update(mAccelerometerVal);

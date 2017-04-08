@@ -6,31 +6,22 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
 
 public class PianoActivity extends AppCompatActivity {
 
-    // Controllers
     private PianoController mPianoController;
     private SensorManager mSensorManager;
     private Sensor mAccelSensor;
-
-	// Views
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_piano);
 
-		initViews();
         initSensors();
         initControllers();
     }
-
-	private void initViews() {
-	}
 
     private void initSensors() {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
