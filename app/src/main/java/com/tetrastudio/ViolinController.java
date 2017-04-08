@@ -41,7 +41,7 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     private Thread mAudioWriteThread, mAudioStopThread;
 
 
-    private boolean mIsPlayingViolin, mViolinJustStarted, mViolinJustStopped;
+    private boolean mIsPlayingViolin;
 
     protected final float LINEAR_ACCEL_THRESHOLD = 0.15f;
 
@@ -75,9 +75,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
             R.raw.b_violin_loop
     };
 
-    private int[] getmLoadedViolinIds;
-    private int[] mLoadedViolinSoundIds;
-    private float mOctaveOffset = 0;
     private int mActiveViolinNote = 0;
 
     public ViolinController(Context context, Activity parentActivity) {
@@ -86,7 +83,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 
         for (int i = 0; i < mViolinButtonIds.length; i++) {
             mViolinButtons.add((ImageButton) parentActivity.findViewById(mViolinButtonIds[i]));
-//            mViolinButtons.get(i).setOnTouchListener(this);
         }
 
         for (int i = 0; i < mViolinGlowIds.length; i++) {
@@ -101,7 +97,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
                 int fileLength = is.available();
                 DataInputStream dis = new DataInputStream(context.getResources().openRawResource(mViolinSoundIds[j]));
                 byte[] tempViolinCBuf = new byte[fileLength];
-                Log.d("SP", "VCB: " + fileLength);
                 dis.readFully(tempViolinCBuf);
                 byte[] finalNoteBuffer = new byte[fileLength - 44];
                 finalNoteBuffer = Arrays.copyOfRange(tempViolinCBuf, 44, fileLength);
@@ -116,8 +111,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
                     AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
                     minBufferSize, AudioTrack.MODE_STREAM);
 
-            Log.d("SP", "MIN BUF SIZE: " + minBufferSize);
-
             mAudioWriteRunnable = new AudioWriteRunnable(mSoundList, mStreamingTrack);
             mAudioWriteThread = new Thread(mAudioWriteRunnable);
 
@@ -129,35 +122,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
             mAudioStopThread.start();
         }
 
-//        InputStream is = context.getResources().openRawResource(R.raw.c_violin_loop);
-//        try {
-//            int fileLength = is.available();
-//            DataInputStream dis = new DataInputStream(context.getResources().openRawResource(R.raw.c_violin_loop));
-//            byte[] tempViolinCBuf = new byte[fileLength];
-//            Log.d("SP", "VCB: " + fileLength);
-//            dis.readFully(tempViolinCBuf);
-//            mViolinCBuf = new byte[fileLength-44];
-//            mViolinCBuf = Arrays.copyOfRange(tempViolinCBuf, 44, fileLength);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        int minBufferSize = AudioTrack.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-//        mStreamingTrack = new AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE,
-//                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
-//                minBufferSize, AudioTrack.MODE_STREAM);
-//
-//        Log.d("SP", "MIN BUF SIZE: " + minBufferSize);
-//
-//        mAudioWriteRunnable = new AudioWriteRunnable(mViolinCBuf, mStreamingTrack);
-//        mAudioWriteThread = new Thread(mAudioWriteRunnable);
-//
-//        mAudioStopRunnable = new AudioStopRunnable(mStreamingTrack);
-//        mAudioStopThread = new Thread(mAudioStopRunnable);
-//
-//        mStreamingTrack.play();
-//        mAudioWriteThread.start();
-//        mAudioStopThread.start();
     }
 
     private float getAverageLinearY() {
@@ -180,8 +144,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
             mLinearAccel[0] = event.values[0] - mGravity[0];
             mLinearAccel[1] = event.values[1] - mGravity[1];
             mLinearAccel[2] = event.values[2] - mGravity[2];
-//            Log.d("SP", "LinearAccel: " + event.values[0]+", " + event.values[1]+", " + event.values[2]);
-//            mLinearAccel = lowPass(event.values.clone(), mLinearAccel);
         }
 
         long deltaTime = updateDeltaTime();
@@ -206,7 +168,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     }
 
     private void update(long deltaTimeMillis, float[] linAccelerometer, float[] accelerometer) {
-//        checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
         updateLinearAccelSound(deltaTimeMillis, linAccelerometer, accelerometer);
         updateViolinView();
     }
@@ -214,13 +175,11 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
     private long mStartTime = 0;
     private static long STOP_TIME_THRESHOLD = 200;
     private void updateLinearAccelSound(long deltaTimeMillis, float[] currentOrientation, float[] currentAccel) {
-        float pitchR = (float) (currentAccel[0] + 3)/14.0f; // Rotational pitch (not the frequency pitch)
+        float pitchR = (float) (currentAccel[0] + 3)/14.0f;
         float gain = Math.max(0, Math.min(1.2f, 1 - (pitchR)));
-//        mStreamingTrack.setPlaybackRate((int)(gain * 44100));
         mStreamingTrack.setVolume(gain);
 
         if (mIsEnabled) {
-//            Log.d("SP", "ACCEL: "+mLinearAccel[1]);
             mAccelHistory.add(mLinearAccel[1]);
         } else if (mAccelHistory.size() > 0) {
             mAccelHistory.clear();
@@ -230,7 +189,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
             return;
         }
         if (getAverageLinearY() >= LINEAR_ACCEL_THRESHOLD ) {
-//        if (Math.abs(mLinearAccel[1]) >= LINEAR_ACCEL_THRESHOLD) {
             // Moving
             if (!mIsPlayingViolin) {
                 mStartTime = System.currentTimeMillis();
@@ -239,17 +197,13 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
             mAudioWriteRunnable.setEnabled(mIsPlayingViolin);
             mAudioStopRunnable.setStop(false);
             mAudioStopRunnable.setJustStop(false);
-            mViolinJustStarted = true;
         } else {
             if (mIsPlayingViolin && System.currentTimeMillis()-mStartTime >= STOP_TIME_THRESHOLD) {
-//                mViolinJustStopped = true;
-                mAudioStopRunnable.setJustStop(mViolinJustStopped);
-                Log.d("SP", "STOPPING VIOLIN");
+                mAudioStopRunnable.setJustStop(true);
                 mAudioStopRunnable.setStop(true);
                 mIsPlayingViolin = false;
                 mAudioWriteRunnable.setEnabled(mIsPlayingViolin);
             } else if (mIsPlayingViolin && System.currentTimeMillis()-mStartTime < STOP_TIME_THRESHOLD) {
-                Log.d("SP", "LESS THAN THRESH");
             }
         }
         mAccelHistory = new ArrayList<Float>(mAccelHistory.subList(mAccelHistory.size() - 3, mAccelHistory.size()));
@@ -262,32 +216,11 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-//        boolean down = false;
-//        Log.d("SP", v.getId() + " ontouch");
-//
-//        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//            down = true;
-//            for (int i = 0; i < mViolinButtons.size(); i++) {
-//
-//            }
-//        }
-//
-//        for (int i = 0; i < mViolinButtonIds.length; i++) {
-//            if (v == mViolinButtons.get(i)) {
-//                mAudioWriteRunnable.setEnabled(down);
-//                mAudioStopRunnable.setStop(!down);
-//                mAudioStopRunnable.setJustStop(!down);
-//                return down;
-//            }
-//        }
-//
-//        return down;
         return true;
     }
 
     @Override
     public void onSlickClickDown(int slicePosition) {
-        Log.d("SP", "SLICE POSITION down: "+slicePosition);
         mActiveViolinNote = (slicePosition + 4) % 7;
         Log.d("SP", "Playing note down: "+mActiveViolinNote);
         mAudioWriteRunnable.setPlayingNote(mActiveViolinNote);
@@ -296,12 +229,10 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 
     @Override
     public void onSlickClickMove(int slicePosition) {
-        Log.d("SP", "SLICE POSITION move: "+slicePosition);
         int newNote = (slicePosition + 4) % 7;
         if (newNote != mActiveViolinNote) {
             mActiveViolinNote = newNote;
             mAudioStopRunnable.setStop(true);
-//            mAudioStopRunnable.setJustStop(true);
             mAudioWriteRunnable.setPlayingNote(mActiveViolinNote);
         } else {
             return;
@@ -310,7 +241,6 @@ public class ViolinController extends ControllerBase implements View.OnTouchList
 
     @Override
     public void onSlickClickUp(int slicePosition) {
-        Log.d("SP", "SLICE POSITION up: "+slicePosition);
         mActiveViolinNote = -1;
         mAudioWriteRunnable.setPlayingNote(mActiveViolinNote);
         mAudioStopRunnable.setStop(true);

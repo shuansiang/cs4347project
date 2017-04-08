@@ -12,10 +12,6 @@ import android.widget.Button;
 
 import java.util.ArrayList;
 
-/**
- * Created by elementoss on 23/3/17.
- */
-
 public class PianoController extends ControllerBase {
 
 	private Context mContext;

@@ -23,9 +23,6 @@ import org.opencv.core.Scalar;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-/**
- * Created by Eyx on 9/3/2017.
- */
 
 public class DrumController extends ControllerBase {
 
@@ -171,10 +168,8 @@ public class DrumController extends ControllerBase {
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-//        float[] accelerometerValues = new float[0];
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             mAccelerometerVal = MathUtils.lowPass(sensorEvent.values.clone(), mAccelerometerVal);
-//            mDebugTextView.setText(String.format("X:%f\nY:%f\nZ:%f", sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]));
         }
 
         long deltaTime = updateDeltaTime();
@@ -192,35 +187,16 @@ public class DrumController extends ControllerBase {
     }
 
     private void update(long deltaTimeMillis, float[] accelerometer) {
-//        checkFlick(deltaTimeMillis, previousOrientation, currentOrientation);
         updateLinearAccelSound(deltaTimeMillis, accelerometer);
         updateDrumView();
     }
 
     private void updateLinearAccelSound(long deltaTimeMillis, float[] currentAccelerometer) {
-//        mSensorDebugLabel.setText(String.format("PitchR:%f\nGain:%f\nMaxVol:%f" +
-//                        "\nMh: %f\nPitch:%f\nRoll:%f", pitchR, gain, mStreamingTrack.getMaxVolume(),
-//                Math.toDegrees(currentOrientation[0]), Math.toDegrees(currentOrientation[1]),
-//                Math.toDegrees(currentOrientation[2])));
         if (!mIsEnabled) {
             return;
         }
-//        else if (mAccelHistory.size() > 0) {
-//            mAccelHistory.clear();
-//        }
 
-//        if (mAccelHistory.size()>0 && currentAccelerometer[1] == mAccelHistory.get(mAccelHistory.size()-1)[1]) {
-//            return;
-//        }
         mAccelHistory.add(currentAccelerometer.clone());
-//        Log.d("TTS", "Sampling: " + currentAccelerometer[1]);
-
-//        StringBuilder str = new StringBuilder();
-//        for (float[] val : mAccelHistory) {
-//            str.append(String.format("%.3f", val[1]));
-//            str.append(',');
-//        }
-//        Log.d("TTSL", str.toString());
 
         if (mAccelHistory.size() < 10) {
             return;
@@ -229,20 +205,16 @@ public class DrumController extends ControllerBase {
         if (mAccelHistory.size() >= 13) {
             for (int i = 0; i < 3; i++) {
                 mAccelHistory.removeFirst();
-//                mAccelHistory.remove(0);
             }
         }
-//        mAccelHistory = new <>(mAccelHistory.subList(mAccelHistory.size() - 3, mAccelHistory.size()));
         float maxSwing = MathUtils.max(mAccelHistory, 1);
 
-//        Log.d("SP", ""+currentAccelerometer[1]);
-//        Log.d("SP", String.format("Max of Swing: %.3f | Last: %.3f", maxSwing, mAccelHistory.get(mAccelHistory.size()-1)[1]));
         if (MathUtils.getOverallSlope(mAccelHistory, 1) < 0) {
             mIsSwingingDown = true;
         } else {
             mIsSwingingDown = false;
         }
-//        if (mAccelHistory.get(mAccelHistory.size() - 1)[1] < 2 && maxSwing > 2) {
+
         if (currentAccelerometer[1] <= 2 && maxSwing > 2) {
             // End of hit
             float volume = Math.max(Math.min(1.0f, (maxSwing - 2) / 7.0f), 0.0f);
@@ -280,12 +252,9 @@ public class DrumController extends ControllerBase {
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
             if (!mIsSwingingDown) {
-//                inputFrame.rgba().rowRange()
                 Scalar mean = Core.mean(inputFrame.rgba());
                 int closestColourIndex = getClosestColour(mean);
-//                Log.d("SP", "Mean: " + mean.val[0] + ", " + mean.val[1] + ", " + mean.val[2]);
                 mActiveDrum = closestColourIndex;
-    //            Log.d("SP", "Closest Colour Index: " + closestColourIndex);
                 mCurrentAverageColor = mean;
             }
             return inputFrame.rgba();

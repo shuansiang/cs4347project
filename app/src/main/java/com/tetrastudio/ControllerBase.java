@@ -2,9 +2,7 @@ package com.tetrastudio;
 
 import android.hardware.SensorEventListener;
 
-/**
- * Created by Games on 14/3/2017.
- */
+// Base controller class to handle update timestamps and enabling/disabling for simple controllers
 public abstract class ControllerBase implements SensorEventListener {
 
     protected static final float UPDATE_INTERVAL = 10;

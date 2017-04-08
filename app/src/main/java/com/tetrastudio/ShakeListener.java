@@ -5,14 +5,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 import android.content.Context;
-
-import java.lang.UnsupportedOperationException;
 
 public class ShakeListener extends ControllerBase {
     private String TAG = ShakeListener.class.getSimpleName();
@@ -50,7 +46,6 @@ public class ShakeListener extends ControllerBase {
 
     public ShakeListener(Context context, Activity parentActivity) {
 
-//        Log.d(TAG, "ShakeListener invoked---->");
         mContext = context;
 
         mShakerGlowView = parentActivity.findViewById(R.id.shaker_button_glow);
@@ -60,8 +55,6 @@ public class ShakeListener extends ControllerBase {
         for (int i = 0; i < mShakerSoundIds.length; i++) {
             mLoadedShakerIds[i] = mSoundPool.load(mContext, mShakerSoundIds[i], 1);
         }
-
-//        resume();
 
         setOnShakeListener(new ShakeListener.OnShakeListener() {
             public void onShake(float speed) {
@@ -83,35 +76,7 @@ public class ShakeListener extends ControllerBase {
     }
 
     public void setOnShakeListener(OnShakeListener listener) {
-//        Log.d(TAG, "ShakeListener setOnShakeListener invoked---->");
         mShakeListener = listener;
-    }
-
-    public void resume() {
-        mSensorMgr = (SensorManager) mContext
-                .getSystemService(Context.SENSOR_SERVICE);
-        if (mSensorMgr == null) {
-            throw new UnsupportedOperationException("Sensors not supported");
-        }
-        boolean supported = false;
-        try {
-            supported = mSensorMgr.registerListener(this,
-                    mSensorMgr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                    SensorManager.SENSOR_DELAY_GAME);
-        } catch (Exception e) {
-            Toast.makeText(mContext, "Shaking not supported", Toast.LENGTH_LONG)
-                    .show();
-        }
-
-        if ((!supported) && (mSensorMgr != null))
-            mSensorMgr.unregisterListener(this);
-    }
-
-    public void pause() {
-        if (mSensorMgr != null) {
-            mSensorMgr.unregisterListener(this);
-            mSensorMgr = null;
-        }
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -129,9 +94,6 @@ public class ShakeListener extends ControllerBase {
         if ((now - mLastTime) > TIME_THRESHOLD) {
             long diff = now - mLastTime;
             float speed = Math.abs(event.values[0]
-                    //+ event.values[1]
-                    //+ event.values[2] - mLastX - mLastY
-                    //- mLastZ)
                     - mLastX)
                     / diff * 10000;
             if (speed >= FORCE_THRESHOLD_HARD) {
@@ -143,8 +105,6 @@ public class ShakeListener extends ControllerBase {
             mLastX = event.values[0];
             mLastY = event.values[1];
             mLastZ = event.values[2];
-//            Log.d(TAG, "X,Y,Z Values: " + mLastX + ", " + mLastY + ", " + mLastZ);
-//            Log.d(TAG, "Shake speed: " + speed);
         }
     }
 
@@ -153,7 +113,6 @@ public class ShakeListener extends ControllerBase {
                 && (now - mLastShake > SHAKE_DURATION)) {
             mLastShake = now;
             mShakeCount = 0;
-//            Log.d(TAG, "ShakeListener mShakeListener---->" + mShakeListener);
             if (mShakeListener != null) {
                 mShakeListener.onShake(speed);
             }
@@ -162,17 +121,9 @@ public class ShakeListener extends ControllerBase {
     }
 
     protected void playSound(float speed) {
-//        if (id > 0) {
         Log.d("SP", "ActivatedShake speed: " + speed);
         float maxSpeed = 1800.0f;
         float volume = Math.min(1, 0.1f + (float) Math.pow((Math.min(speed, maxSpeed) / maxSpeed), 1.5f));
         mSoundPool.play(mLoadedShakerIds[0], volume, volume, 1, 0, 1);
-//        } else {
-//            mSoundPool.play(mLoadedShakerIds[1], 1, 1, 1, 0, 0 + 1);
-//            mediaPlayer = MediaPlayer.create(this, R.raw.soft);
-//        }
-
-//        mediaPlayer.start();
-
     }
 }

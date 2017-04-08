@@ -10,17 +10,16 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.opencv.android.CameraBridgeViewBase;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
+// Activity containing Violin, Shaker and Drums
 public class VSDActivity extends AppCompatActivity {
 
     private static final int CAMERA_REQUEST_CODE = 123;
@@ -40,13 +39,11 @@ public class VSDActivity extends AppCompatActivity {
     private Sensor mAccelSensor, mLinearAccelSensor;
     //Shaker
     private ShakeListener mShaker;
-    private Toast mToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vsd);
-
 
         initViews();
         initSensors();
@@ -65,12 +62,10 @@ public class VSDActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    Log.d("SP", "ACTION UP");
                     mDrumController.setEnabled(false);
                     mShaker.setEnabled(true);
                     mViolinController.setEnabled(false);
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    Log.d("SP", "ACTION DOWN");
                     mDrumController.setEnabled(true);
                     mShaker.setEnabled(false);
                     mViolinController.setEnabled(false);
@@ -84,12 +79,10 @@ public class VSDActivity extends AppCompatActivity {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    Log.d("SP", "Violin UP");
                     mDrumController.setEnabled(false);
                     mShaker.setEnabled(true);
                     mViolinController.setEnabled(false);
                 } else if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    Log.d("SP", "Violin DOWN");
                     mDrumController.setEnabled(false);
                     mShaker.setEnabled(false);
                     mViolinController.setEnabled(true);
@@ -103,7 +96,6 @@ public class VSDActivity extends AppCompatActivity {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mLinearAccelSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        Log.d("SP", "INIT SENSOR: LIN ACCEL: "+mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION));
     }
 
     private void initControllers() {
@@ -154,7 +146,6 @@ public class VSDActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-//        mShaker.pause();
         pauseControllerSensors();
     }
 
@@ -166,12 +157,10 @@ public class VSDActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay!.
+                    // permission was granted
                     mDrumController.enableCamera();
 
                 } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }

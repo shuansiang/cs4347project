@@ -1,12 +1,8 @@
 package com.tetrastudio;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Created by Games on 15/3/2017.
- */
 
 public class MathUtils {
     public static float ALPHA = 0.25f;
